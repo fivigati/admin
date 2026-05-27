@@ -408,15 +408,23 @@
     }
 
     // ==========================================
-    // 4. UPDATE WARNA MENU SIDEBAR (BARU)
+    // 4. UPDATE WARNA MENU SIDEBAR
     // ==========================================
     // A. Kembalikan semua menu ke warna dasar (abu-abu/tidak aktif)
     const allMenus = document.querySelectorAll('aside a[onclick^="switchPage"]');
     allMenus.forEach(menu => {
-        // Hapus styling ungu Tailwind
+        // Hapus styling ungu (aktif)
         menu.classList.remove('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-100', 'font-semibold');
-        // Tambahkan styling abu-abu
-        menu.classList.add('text-slate-600', 'font-medium');
+        
+        // Tambahkan styling abu-abu dasar (pasif)
+        menu.classList.add('font-medium');
+        
+        // Kembalikan efek hover dan warna teks sesuai posisinya
+        if (menu.id === 'liveSessionMenu' || menu.id === 'violationMenu') {
+            menu.classList.add('text-slate-500', 'hover:bg-slate-50');
+        } else {
+            menu.classList.add('text-slate-600', 'hover:bg-slate-100');
+        }
         
         // Beri warna abu-abu ke ikonnya
         const icon = menu.querySelector('i');
@@ -426,12 +434,16 @@
     // B. Beri warna ungu (aktif) hanya pada menu yang sedang diklik
     const activeMenu = document.querySelector(`aside a[onclick="switchPage('${pageId}')"]`);
     if(activeMenu) {
-        // Hapus styling abu-abu
-        activeMenu.classList.remove('text-slate-600', 'text-slate-500', 'font-medium');
+        // Hapus styling abu-abu DAN hapus efek hover agar tidak bentrok
+        activeMenu.classList.remove(
+            'text-slate-600', 'text-slate-500', 'font-medium', 
+            'hover:bg-slate-100', 'hover:bg-slate-50'
+        );
+        
         // Tambahkan styling ungu Tailwind
         activeMenu.classList.add('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-100', 'font-semibold');
         
-        // Hilangkan warna abu-abu dari ikonnya agar otomatis berubah jadi putih
+        // Hilangkan warna abu-abu dari ikonnya
         const activeIcon = activeMenu.querySelector('i');
         if(activeIcon) activeIcon.classList.remove('text-slate-400');
     }
