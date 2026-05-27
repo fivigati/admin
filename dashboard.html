@@ -77,14 +77,16 @@
         </div>
       </div>
 
-      <div class="border-t border-slate-100 px-3 py-3 space-y-1">
-        <button class="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all">
-          <i data-lucide="settings" class="w-4 h-4 text-slate-400"></i> Pengaturan
-        </button>
-        <button class="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium text-rose-500 hover:bg-rose-50 transition-all">
-          <i data-lucide="log-out" class="w-4 h-4"></i> Keluar
-        </button>
-      </div>
+      <!-- === SECTION: MENU BAWAH SIDEBAR === -->
+    <div class="border-t border-slate-100 px-3 py-3 space-y-1">
+      <!-- Tambahkan onclick dan id -->
+      <a href="#" onclick="switchPage('settings')" id="settingsMenu" class="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all">
+        <i data-lucide="settings" class="w-4 h-4 text-slate-400"></i> Pengaturan
+      </a>
+      <button class="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium text-rose-500 hover:bg-rose-50 transition-all">
+        <i data-lucide="log-out" class="w-4 h-4"></i> Keluar
+      </button>
+    </div>
     </aside>
 
     <main class="flex-1 flex flex-col overflow-hidden">
@@ -106,7 +108,7 @@
           <div class="flex items-center gap-3 border-l border-slate-200 pl-4">
             <div class="text-right hidden sm:block">
               <p class="text-xs font-bold text-slate-800 leading-none">Administrator</p>
-              <p id="operatorName" class="text-sm font-medium text-gray-700">Loading...</p>
+              <p id="operatorName" class="text-[10px] text-slate-400 font-medium mt-1">Loading...</p>
             </div>
             <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-xs font-bold text-white shadow-sm">AD</div>
           </div>
@@ -353,6 +355,12 @@
           <h2 class="text-2xl font-bold">Memuat Log Pelanggaran...</h2>
         </div>
 
+        <!-- === VIEW: PENGATURAN === -->
+        <div id="view-settings" class="page-view hidden">
+          <h2 class="text-2xl font-bold">Pengaturan Sistem</h2>
+          <p>Pengaturan profil sekolah dan akun admin.</p>
+        </div>
+
       </div>
     </main>
   </div>
@@ -405,6 +413,9 @@
     } else if (pageId === 'violations') {
       pageTitle.innerText = "Log Pelanggaran";
       pageSubtitle.innerText = 'Rekam jejak aktivitas mencurigakan.';
+    } else if (pageId === 'settings') { // <--- Tambahkan blok ini
+      pageTitle.innerText = "Pengaturan";
+      pageSubtitle.innerText = 'Kelola profil dan konfigurasi aplikasi.';
     }
 
     // ==========================================
