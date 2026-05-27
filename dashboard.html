@@ -97,8 +97,12 @@
     <main class="flex-1 flex flex-col overflow-hidden">
       
      <div class="flex-1 overflow-y-auto p-5 space-y-5">
+       
+       <div id="breadcrumb" class="px-5 pt-2">
+         <h2 id="dynamicTitle" class="text-xl font-black text-slate-900">Dashboard</h2>
+       </div>
         
-        <div id="view-dashboard" class="page-view block">
+       <div id="view-dashboard" class="page-view block">
           
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div class="card-hover relative overflow-hidden rounded-2xl border border-indigo-100 bg-white p-4 shadow-sm">
@@ -370,32 +374,8 @@
       targetView.classList.add('block');
     }
 
-    // 3. Ubah Teks Header 
-    const pageTitle = document.getElementById('pageTitle');
-    const pageSubtitle = document.getElementById('pageSubtitle');
-    
-    if (pageId === 'dashboard') {
-      pageTitle.innerText = "Dashboard";
-      pageSubtitle.innerHTML = 'Selamat datang kembali di <span class="font-semibold text-slate-700">Smart Exam</span>.';
-    } else if (pageId === 'students') {
-      pageTitle.innerText = "Data Siswa";
-      pageSubtitle.innerText = 'Manajemen basis data siswa Anda.';
-    } else if (pageId === 'exams') {
-      pageTitle.innerText = "Manajemen Ujian";
-      pageSubtitle.innerText = 'Atur jadwal dan soal ujian.';
-    } else if (pageId === 'live-session') {
-      pageTitle.innerText = "Live Session";
-      pageSubtitle.innerText = 'Pantau ujian secara real-time.';
-    } else if (pageId === 'violations') {
-      pageTitle.innerText = "Log Pelanggaran";
-      pageSubtitle.innerText = 'Rekam jejak aktivitas mencurigakan.';
-    } else if (pageId === 'settings') { // <--- Tambahkan blok ini
-      pageTitle.innerText = "Pengaturan";
-      pageSubtitle.innerText = 'Kelola profil dan konfigurasi aplikasi.';
-    }
-
     // ==========================================
-    // 4. UPDATE WARNA MENU SIDEBAR
+    // 3. UPDATE WARNA MENU SIDEBAR
     // ==========================================
     // A. Kembalikan semua menu ke warna dasar (abu-abu/tidak aktif)
     const allMenus = document.querySelectorAll('aside a[onclick^="switchPage"]');
