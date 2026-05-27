@@ -13,14 +13,24 @@
     .page-view.block { display: block; }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-900">
-  <div class="flex h-screen overflow-hidden">
     
-    <aside id="sidebar" class="hidden md:flex w-60 bg-white border-r border-slate-200 flex-col shrink-0">
-      <div class="px-5 py-6 border-b border-slate-100">
-        <h1 class="text-sm font-black text-slate-900">Smart Exam</h1>
-        <p id="schoolName" class="text-[10px] text-slate-400 font-medium mt-1">Memuat data...</p>
-      </div>
+<body class="bg-slate-50 text-slate-900 overflow-hidden">
+  <div class="flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="w-60 bg-white border-r border-slate-200 flex flex-col shrink-0">
+      <!-- LOGO -->
+      <div class="px-5 py-4 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-slate-900 flex items-center justify-center shadow-md">
+            <span class="text-white text-sm font-bold">S</span>
+          </div>
+          <div>
+            <h1 class="text-sm font-black tracking-tight text-slate-900 leading-none">Smart Exam</h1>
+            <p id="schoolName" class="text-[10px] text-slate-400 font-medium mt-1">
+              Memuat Data...
+            </p>
+          </div>
 
       <div class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         <a href="#" onclick="switchPage('dashboard')" class="w-full flex items-center gap-3 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-100">
