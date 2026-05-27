@@ -21,13 +21,6 @@ async function loadDashboard() {
     const schoolNameEl = document.getElementById('schoolName');
     if(schoolNameEl) schoolNameEl.innerText = user.school_name;
   }
-  if(user.operator_name || user.full_name) {
-  const operatorNameEl = document.getElementById('operatorName');
-  if(operatorNameEl) {
-    operatorNameEl.innerText = user.operator_name || user.full_name;
-  }
-}
-
   if(user.plan_type) {
     const planBadgeEl = document.getElementById('planBadge');
     if(planBadgeEl) planBadgeEl.innerText = user.plan_type.toUpperCase() + ' PLAN';
