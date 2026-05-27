@@ -352,10 +352,6 @@
   // Inisialisasi ikon Lucide
   lucide.createIcons();
 
-  // Menampilkan tanggal hari ini
-  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-  document.getElementById('todayDate').innerHTML = new Date().toLocaleDateString('id-ID', options);
-
   // Memuat data awal dashboard
   loadDashboard();
 
@@ -447,19 +443,23 @@
   function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
   const sidebarText = document.getElementById('sidebarText');
-  const navTexts = document.querySelectorAll('aside a span:not(.lucide), aside p');
+  // Gunakan selector yang lebih aman
+  const navTexts = document.querySelectorAll('aside a:not(.flex), aside p, aside .uppercase');
 
   if (sidebar.classList.contains('w-60')) {
-    // Tutup Sidebar
     sidebar.classList.replace('w-60', 'w-16');
-    sidebarText.classList.add('hidden');
+    sidebarText.classList.add('hidden'); // Menyembunyikan nama sekolah
     navTexts.forEach(el => el.classList.add('hidden'));
   } else {
-    // Buka Sidebar
     sidebar.classList.replace('w-16', 'w-60');
-    sidebarText.classList.remove('hidden');
+    sidebarText.classList.remove('hidden'); // Menampilkan kembali
     navTexts.forEach(el => el.classList.remove('hidden'));
+    
+    // PENTING: Panggil ulang loadDashboard agar data diisi kembali 
+    // jika sebelumnya sempat hilang saat hidden
+    loadDashboard(); 
   }
+  lucide.createIcons();
 }
 </script>
 </body>
