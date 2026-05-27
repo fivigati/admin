@@ -384,9 +384,22 @@
       targetView.classList.remove('hidden');
       targetView.classList.add('block');
     }
-
+    // 3. DINAMIS TITLE (Otomatis berdasarkan pageId)
+    // Ubah "live-session" jadi "Live Session", "students" jadi "Data Siswa", dst.
+    const titleMap = {
+        'dashboard': 'Dashboard',
+        'students': 'Data Siswa',
+        'exams': 'Manajemen Ujian',
+        'live-session': 'Live Session',
+        'violations': 'Log Pelanggaran',
+        'settings': 'Pengaturan Sistem'
+    };
+    const dynamicTitle = document.getElementById('dynamicTitle');
+    if (dynamicTitle) {
+        dynamicTitle.innerText = titleMap[pageId] || "Smart Exam";
+    }
     // ==========================================
-    // 3. UPDATE WARNA MENU SIDEBAR
+    // 4. UPDATE WARNA MENU SIDEBAR
     // ==========================================
     // A. Kembalikan semua menu ke warna dasar (abu-abu/tidak aktif)
     const allMenus = document.querySelectorAll('aside a[onclick^="switchPage"]');
