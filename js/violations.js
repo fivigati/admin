@@ -69,7 +69,6 @@ async function loadViolations(showLoading = false) {
 
   // --- RENDER DATA ---
   result.data.forEach(v => {
-    // Tambahkan data-class dan data-room agar universalFilter bisa mendeteksi kelas/ruang
     table.innerHTML += `
       <tr class="hover:bg-slate-50 transition-all border-b border-slate-100" 
           data-class="${v.student_class}" 
@@ -84,7 +83,10 @@ async function loadViolations(showLoading = false) {
           <span class="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-bold text-rose-600">${v.violation_type}</span>
         </td>
         <td class="px-6 py-4 text-center">
-          <button onclick="deleteViolation('${v.id}')" class="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-100">Hapus</button>
+          <button onclick="deleteStudentViolations('${v.student_nisn}', '${v.student_name}')" 
+                  class="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-100">
+            Hapus
+          </button>
         </td>
       </tr>
     `;
@@ -99,26 +101,24 @@ function formatDate(dateString) {
   return new Date(dateString).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-function resetViolationStudent(data) {
-  const sheet = getSheet(CONFIG.SHEETS.VIOLATIONS);
-  const values = sheet.getDataRange().getValues();
+async function deleteStudentViolations(nisn, name) {
+  if (!confirm(`Hapus SEMUA log pelanggaran untuk ${name} (NISN: ${nisn})?`)) return;
   
-  // Looping dari bawah ke atas agar deleteRow tidak merusak indeks
-  for (let i = values.length - 1; i >= 1; i--) {
-    // Pastikan indeks kolom nisn sesuai dengan sheet Anda (misal kolom index 2 adalah nisn)
-    const nisn = String(values[i][2]).trim(); 
-    const schoolNpsn = String(values[i][1]).trim();
-    if (
-      nisn === String(data.student_nisn).trim()
-      && schoolNpsn === String(data.school_npsn).trim()
-    ) {
-      sheet.deleteRow(i + 1);
-    }
-  }
-  return jsonResponse({
-    success: true,
-    message: 'Semua log pelanggaran siswa tersebut berhasil dihapus'
+  const user = JSON.parse(localStorage.getItem('smart_exam_user'));
+  
+  // Memanggil API dengan action 'resetViolationStudent'
+  const result = await apiRequest({ 
+    action: 'resetViolationStudent', 
+    student_nisn: nisn, 
+    school_npsn: user.school_npsn 
   });
+  
+  if (result.success) {
+    alert(result.message);
+    loadViolations(true); // Refresh data
+  } else {
+    alert("Gagal: " + result.message);
+  }
 }
 
 async function deleteAllViolations() {
