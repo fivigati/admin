@@ -91,6 +91,7 @@ async function loadViolations(showLoading = false) {
     `;
   });
 lucide.createIcons();
+}
 
 // --- FUNGSI PENDUKUNG ---
 function formatDate(dateString) {
