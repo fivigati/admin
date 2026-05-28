@@ -70,14 +70,17 @@ async function loadViolations(showLoading = false) {
 
   // --- RENDER DATA ---
   result.data.forEach(v => {
+    // Tambahkan data-class dan data-room agar universalFilter bisa mendeteksi kelas/ruang
     table.innerHTML += `
-      <tr class="hover:bg-slate-50 transition-all border-b border-slate-100">
+      <tr class="hover:bg-slate-50 transition-all border-b border-slate-100" 
+          data-class="${v.student_class}" 
+          data-room="${v.student_room}">
         <td class="px-6 py-4 text-xs text-slate-500">${formatDate(v.timestamp || v.created_at)}</td>
         <td class="px-6 py-4">
           <p class="text-sm font-semibold text-slate-800">${v.student_name}</p>
           <p class="text-xs text-slate-400">${v.student_class} • ${v.student_room}</p>
         </td>
-        <td class="px-6 py-4 text-sm text-slate-600">${v.subject_name || '-'}</td>
+        <td class="px-6 py-4 text-sm text-slate-600">${v.subject_name || v.exam_id || '-'}</td>
         <td class="px-6 py-4">
           <span class="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-bold text-rose-600">${v.violation_type}</span>
         </td>
@@ -87,8 +90,7 @@ async function loadViolations(showLoading = false) {
       </tr>
     `;
   });
-  lucide.createIcons();
-}
+lucide.createIcons();
 
 // --- FUNGSI PENDUKUNG ---
 function formatDate(dateString) {
