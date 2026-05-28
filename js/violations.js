@@ -2,23 +2,25 @@ async function loadViolations() {
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
   if (!user) { window.location.href = 'index.html'; return; }
 
-  // CEK AKSES PREMIUM (Bannernya sekarang pakai <tr><td> agar konsisten)
-  if (user.plan_type && user.plan_type.toLowerCase().trim() !== 'premium') {
+  // --- CEK PLAN: TAMPILKAN BANNER JIKA BUKAN PREMIUM ---
+  if (user.plan_type && user.plan_type.toLowerCase() !== 'premium') {
     const table = document.getElementById('violationsTable');
     if (table) {
       table.innerHTML = `
         <tr>
-          <td colspan="5" class="py-16">
-            <div class="flex flex-col items-center justify-center text-center p-8">
-              <div class="text-6xl mb-4">🔒</div>
+          <td colspan="7" class="py-12">
+            <div class="flex flex-col items-center justify-center p-8 text-center bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl mx-4">
+              <div class="text-5xl mb-3">🔒</div>
               <h3 class="text-lg font-bold text-slate-800">Fitur Premium Terkunci</h3>
-              <p class="text-sm text-slate-500 max-w-sm mt-2">Log pelanggaran detail hanya tersedia untuk akun Pro.</p>
+              <p class="text-sm text-slate-500 max-w-sm mt-2">
+                Log dan riwayat pelanggaran siswa secara detail hanya tersedia untuk akun Pro. Silakan upgrade untuk membuka akses.
+              </p>
             </div>
           </td>
         </tr>
       `;
     }
-    return;
+    return; // Hentikan fungsi agar tidak memanggil API
   }
 
   const result = await apiRequest({ action: 'getViolations', school_npsn: user.school_npsn });
