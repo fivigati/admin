@@ -13,10 +13,6 @@ async function loadDashboard() {
     return;
   }
 
-  // --- SET DEFAULT OPERATOR NAME ---
-  const operatorNameEl = document.getElementById('operatorName');
-  if(operatorNameEl) operatorNameEl.innerText = "Operator Sekolah";
-
   // =========================
   // OPTIMISTIC UI LOAD (INSTAN)
   // =========================
