@@ -2,6 +2,11 @@ async function loadViolations() {
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
   if (!user) { window.location.href = 'index.html'; return; }
 
+  // Ambil elemen filter tanggal
+  const dateInput = document.getElementById('dateFilter');
+  // Jika input belum ada, gunakan hari ini sebagai default
+  const selectedDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
+
   const table = document.getElementById('violationsTable');
   if (!table) return;
 
@@ -23,8 +28,13 @@ async function loadViolations() {
     return;
   }
 
-  // 2. JIKA PREMIUM: LOAD DATA
-  const result = await apiRequest({ action: 'getViolations', school_npsn: user.school_npsn });
+  // 2. FETCH DATA DENGAN FILTER TANGGAL
+  const result = await apiRequest({ 
+    action: 'getViolations', 
+    school_npsn: user.school_npsn,
+    date: selectedDate 
+  });
+
   if (!result.success) return;
 
   table.innerHTML = '';
@@ -35,7 +45,7 @@ async function loadViolations() {
       <tr>
         <td colspan="5" class="py-16 text-center text-slate-400">
           <i data-lucide="shield-check" class="w-12 h-12 mx-auto mb-3 text-emerald-200"></i>
-          <p class="text-sm font-semibold text-slate-600">Tidak ada pelanggaran hari ini</p>
+          <p class="text-sm font-semibold text-slate-600">Tidak ada pelanggaran pada tanggal ${selectedDate}</p>
           <p class="text-xs mt-1">Siswa terpantau aman dan tertib.</p>
         </td>
       </tr>
@@ -65,29 +75,7 @@ async function loadViolations() {
   });
   lucide.createIcons();
 }
-// 2. FETCH DATA DENGAN FILTER TANGGAL
-  const result = await apiRequest({ 
-    action: 'getViolations', 
-    school_npsn: user.school_npsn,
-    date: selectedDate // Kirim tanggal ke backend
-  });
 
-  if (!result.success) return;
-
-  const table = document.getElementById('violationsTable');
-  table.innerHTML = '';
-
-  // 3. JIKA DATA KOSONG
-  if (!result.data || result.data.length === 0) {
-    table.innerHTML = `
-      <tr>
-        <td colspan="5" class="py-16 text-center text-slate-400">
-          <p class="text-sm">Tidak ada pelanggaran pada tanggal ${selectedDate}</p>
-        </td>
-      </tr>
-    `;
-    return;
-  }
 // FUNGSI PENDUKUNG (TETAP SAMA)
 function formatDate(dateString) {
   if (!dateString) return '-';
@@ -112,11 +100,13 @@ async function deleteAllViolations() {
 
 function printViolations() { window.print(); }
 
-// Tambahkan ini di bagian bawah file untuk mendeteksi perubahan tanggal
-document.getElementById('dateFilter').addEventListener('change', loadViolations);
-
-// Set default tanggal hari ini saat halaman dimuat
-document.getElementById('dateFilter').value = new Date().toISOString().split('T')[0];
+// --- INISIALISASI ---
+// Tambahkan listener ke input tanggal jika ada
+const dateFilter = document.getElementById('dateFilter');
+if (dateFilter) {
+  dateFilter.value = new Date().toISOString().split('T')[0];
+  dateFilter.addEventListener('change', loadViolations);
+}
 
 loadViolations();
 setInterval(loadViolations, 5000);
