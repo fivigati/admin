@@ -400,13 +400,21 @@
     <div class="flex flex-wrap gap-3">
       <input type="text" id="searchViolation" placeholder="Cari nama siswa..." class="flex-1 min-w-[220px] rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-indigo-500">
       <!-- Tambahkan ini di dalam div filter halaman Log Pelanggaran -->
-      <input type="date" id="dateFilter" class="rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-indigo-500 text-slate-600">
-      <select id="filterClass" class="rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-indigo-500"><option value="">Semua Kelas</option></select>
-      <select id="filterRoom" class="rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-indigo-500"><option value="">Semua Ruang</option></select>
-      <button onclick="printViolations()" class="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">Print</button>
-      <button onclick="deleteAllViolations()" class="rounded-xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white hover:bg-rose-600">Hapus Semua</button>
-    </div>
-  </div>
+      <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex gap-3">
+          <input 
+            type="text" 
+            id="searchUniversal" 
+            placeholder="Cari nama siswa, kelas, atau ruang..."
+            class="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-indigo-500"
+            oninput="universalFilter()">
+  
+          <input type="date" id="dateFilter" class="rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-indigo-500">
+          <button onclick="printViolations()" class="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">Print</button>
+          <button onclick="deleteAllViolations()" class="rounded-xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white hover:bg-rose-600">Hapus Semua</button>
+        </div>
+      </div>
+      
 
   <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
     <div class="overflow-x-auto">
