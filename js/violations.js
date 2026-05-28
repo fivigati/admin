@@ -3,22 +3,25 @@ async function loadViolations() {
   if (!user) { window.location.href = 'index.html'; return; }
 
   // LOGIKA BANNER PREMIUM (Sekarang disamakan ukurannya dengan live-session)
-  if (!isPremium) {
-  const tableContainer = document.getElementById('violationsTable');
-  if (tableContainer) {
-    // Kita hapus class max-w-xl dan ganti menjadi w-full agar mengikuti lebar grid
-    tableContainer.innerHTML = `
-      <div class="flex flex-col items-center justify-center text-center p-16 w-full border-b border-slate-100 bg-white">
-        <div class="text-6xl mb-4">🔒</div>
-        <h3 class="text-xl font-black tracking-tight text-slate-800">Fitur Premium Terkunci</h3>
-        <p class="text-sm text-slate-500 mt-3 max-w-sm">
-          Log dan riwayat pelanggaran siswa secara detail hanya tersedia untuk akun Pro. Tingkatkan langganan Anda untuk membuka akses penuh.
-        </p>
-      </div>
-    `;
+  if (user.plan_type && user.plan_type.toLowerCase() !== 'premium') {
+    const table = document.getElementById('sessionTable');
+    if (table) {
+      table.innerHTML = `
+        <tr>
+          <td colspan="7" class="py-12">
+            <div class="flex flex-col items-center justify-center p-8 text-center bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl mx-4">
+              <div class="text-5xl mb-3">🔒</div>
+              <h3 class="text-lg font-bold text-slate-800">Fitur Premium Terkunci</h3>
+              <p class="text-sm text-slate-500 max-w-sm mt-2">
+                Log dan riwayat pelanggaran siswa secara detail hanya tersedia untuk akun Pro. Tingkatkan langganan Anda untuk membuka akses.
+              </p>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+    return; // Hentikan fungsi agar tidak memanggil API
   }
-  return;
-}
   // --------------------------------------------
 
   // JIKA AKUN PREMIUM, LANJUTKAN MEMUAT DATA:
