@@ -116,26 +116,31 @@ async function deleteAllViolations() {
 // --- FUNGSI PRINT FINAL ---
 async function printViolations() {
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
+  // Mengambil data konfigurasi sekolah dari backend
   const res = await apiRequest({ action: 'getSchoolConfig', school_npsn: user.school_npsn });
-
-  const sc = res.data && res.data.school ? res.data.school : (res.data || res); 
-
-  if (!sc || !sc.school_name) {
-    console.error("Struktur data sekolah yang diterima:", res);
-    alert("Data sekolah gagal dimuat. Cek console untuk detail.");
-    return;
-  }
   
-  const kotaSekolah = sc.city || "Malang";
-  const tglTerpilih = dateFilter ? dateFilter.value : new Date().toLocaleDateString();
+  // Ambil data sekolah dengan aman
+  const sc = (res.data && res.data.school) ? res.data.school : (res.data || {}); 
+  
+  const datePicker = document.getElementById("dateFilter");
+  const tglTerpilih = datePicker ? datePicker.value : new Date().toLocaleDateString();
+  
+  // Ambil baris yang sedang tampil di layar
   const rows = document.querySelectorAll("#violationsTable tr");
-  
   let tableContent = "";
+  
   rows.forEach(row => {
+    // Hanya cetak baris yang tidak disembunyikan filter
     if(row.style.display !== 'none') {
       const cols = row.querySelectorAll("td");
       if(cols.length >= 4) {
-        tableContent += `<tr><td style="border:1px solid black; text-align:center;">${cols[0].innerText}</td><td style="border:1px solid black;">${cols[1].innerText}</td><td style="border:1px solid black; text-align:center;">${cols[2].innerText}</td><td style="border:1px solid black;">${cols[3].innerText}</td></tr>`;
+        tableContent += `
+          <tr>
+            <td style="padding: 8px; border: 1px solid black; text-align: center;">${cols[0].innerText}</td>
+            <td style="padding: 8px; border: 1px solid black;">${cols[1].innerText}</td>
+            <td style="padding: 8px; border: 1px solid black; text-align: center;">${cols[2].innerText}</td>
+            <td style="padding: 8px; border: 1px solid black;">${cols[3].innerText}</td>
+          </tr>`;
       }
     }
   });
@@ -144,41 +149,54 @@ async function printViolations() {
   printWindow.document.write(`
     <html>
       <head>
-        <title>Berita Acara - ${sc.school_name}</title>
+        <title>Berita Acara - ${sc.school_name || 'Smart Exam'}</title>
         <style>
-          @page { size: A4; margin: 20mm; }
-          body { font-family: "Times New Roman", serif; color: black; line-height: 1.2; }
-          .kop-container { display: flex; align-items: center; border-bottom: 4px double black; padding-bottom: 10px; margin-bottom: 20px; text-align: center; }
-          .logo { width: 80px; margin-right: 15px; }
-          .kop-text { flex-grow: 1; text-align: center; }
-          .kop-text h2 { margin: 0; font-size: 12pt; }
+          @page { size: 210mm 330mm; margin: 20mm; }
+          body { font-family: "Times New Roman", serif; line-height: 1.5; padding: 20px; color: black; }
+          .kop-container { display: flex; align-items: center; border-bottom: 4px double black; padding-bottom: 10px; margin-bottom: 20px; text-align: center; position: relative; }
+          .logo { width: 80px; position: absolute; left: 10px; }
+          .kop-text { width: 100%; }
+          .kop-text h2 { margin: 0; font-size: 14pt; font-weight: bold; }
           .kop-text h1 { margin: 0; font-size: 16pt; font-weight: bold; }
+          .kop-text p { margin: 0; font-size: 9pt; font-style: italic; }
           .title { text-align: center; font-weight: bold; text-decoration: underline; margin: 20px 0; font-size: 14pt; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th, td { border: 1px solid black; padding: 8px; font-size: 10pt; }
-          .footer { margin-top: 40px; float: right; width: 300px; text-align: center; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 10pt; }
+          th { background: #f2f2f2; border: 1px solid black; padding: 10px; font-weight: bold; text-align: center; }
+          td { border: 1px solid black; padding: 8px; }
+          .footer { margin-top: 50px; float: right; width: 250px; text-align: center; }
         </style>
       </head>
       <body>
+        ${sc.school_name ? `
         <div class="kop-container">
-          <img src="${sc.logo_url}" class="logo">
+          <img src="${sc.logo_url || ''}" class="logo">
           <div class="kop-text">
-            <h2>${sc.education_department.toUpperCase()}</h2>
+            <h2>${(sc.education_department || 'DINAS PENDIDIKAN').toUpperCase()}</h2>
             <h1>${sc.school_name.toUpperCase()}</h1>
-            <p>${sc.address}</p>
+            <p>${sc.address || ''}</p>
+            <p>Email: ${sc.email || ''} | Website: ${sc.website || ''}</p>
           </div>
-        </div>
-        <div class="title">BERITA ACARA LAPORAN PELANGGARAN UJIAN</div>
-        <p>Pada hari ini, tanggal <b>${tglTerpilih}</b>, dilaporkan pelanggaran sebagai berikut:</p>
+        </div>` : `<div class="title">BERITA ACARA LAPORAN PELANGGARAN UJIAN</div>`}
+        
+        ${sc.school_name ? '' : '<div class="title">BERITA ACARA LAPORAN PELANGGARAN UJIAN</div>'}
+        
+        <p>Pada hari ini, tanggal <b>${tglTerpilih}</b>, telah dilaporkan aktivitas pelanggaran pada sistem Smart Exam sebagai berikut:</p>
         <table>
           <thead>
-            <tr><th>Waktu</th><th>Identitas Siswa</th><th>Mapel</th><th>Keterangan</th></tr>
+            <tr>
+              <th width="15%">Waktu</th>
+              <th width="40%">Identitas Siswa</th>
+              <th width="20%">Mapel</th>
+              <th width="25%">Keterangan</th>
+            </tr>
           </thead>
-          <tbody>${tableContent}</tbody>
+          <tbody>${tableContent || '<tr><td colspan="4" style="text-align:center;">Tidak ada data pelanggaran</td></tr>'}</tbody>
         </table>
+        <p style="margin-top: 30px;">Demikian Berita Acara ini dibuat untuk dipergunakan sebagaimana mestinya.</p>
         <div class="footer">
-          <p>${kotaSekolah}, ........................... 20....</p>
-          <p>Pengawas Ujian,</p><br><br><br>
+          <p>${sc.city || 'Malang'}, ${new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}</p>
+          <p>Pengawas Ujian,</p>
+          <br><br><br>
           <p><b>( ........................................... )</b></p>
         </div>
         <script>window.onload = function() { window.print(); window.close(); }<\/script>
@@ -187,7 +205,6 @@ async function printViolations() {
   `);
   printWindow.document.close();
 }
-
 // Fungsi untuk update filter dropdown secara otomatis
 function updateFilters(data) {
   const classSet = new Set(data.map(item => item.student_class));
