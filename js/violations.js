@@ -1,14 +1,25 @@
-async function loadViolations() {
+// --- INISIALISASI ---
+const dateFilter = document.getElementById('dateFilter');
+if (dateFilter) {
+  dateFilter.value = new Date().toISOString().split('T')[0];
+  dateFilter.addEventListener('change', () => {
+    // Saat ganti tanggal, panggil loadViolations (dengan loading)
+    loadViolations(true); 
+  });
+}
+// --- 2. FUNGSI UTAMA ---
+async function loadViolations(showLoading = false) {
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
   if (!user) { window.location.href = 'index.html'; return; }
 
-  // Ambil elemen filter tanggal
-  const dateInput = document.getElementById('dateFilter');
-  // Jika input belum ada, gunakan hari ini sebagai default
-  const selectedDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
-
   const table = document.getElementById('violationsTable');
   if (!table) return;
+
+  // Tampilkan loading HANYA JIKA showLoading bernilai true
+  if (showLoading) {
+    table.innerHTML = `<tr><td colspan="5" class="py-16 text-center"><div class="flex flex-col items-center justify-center text-slate-400 animate-pulse"><i data-lucide="loader-circle" class="w-10 h-10 mb-2 animate-spin text-indigo-500"></i><p class="text-sm font-medium">Sedang memuat data...</p></div></td></tr>`;
+    lucide.createIcons();
+  }
 
   // 1. CEK PLAN: TAMPILKAN BANNER JIKA BUKAN PREMIUM
   if (user.plan_type && user.plan_type.toLowerCase().trim() !== 'premium') {
@@ -28,7 +39,10 @@ async function loadViolations() {
     return;
   }
 
-  // 2. FETCH DATA DENGAN FILTER TANGGAL
+ // --- AMBIL TANGGAL DENGAN AMAN ---
+  const selectedDate = dateFilter ? dateFilter.value : new Date().toISOString().split('T')[0];
+
+  // --- FETCH DATA ---
   const result = await apiRequest({ 
     action: 'getViolations', 
     school_npsn: user.school_npsn,
@@ -39,7 +53,7 @@ async function loadViolations() {
 
   table.innerHTML = '';
 
-  // 3. JIKA DATA KOSONG
+  // --- JIKA DATA KOSONG ---
   if (!result.data || result.data.length === 0) {
     table.innerHTML = `
       <tr>
@@ -54,7 +68,7 @@ async function loadViolations() {
     return;
   }
 
-  // 4. JIKA ADA DATA
+  // --- RENDER DATA ---
   result.data.forEach(v => {
     table.innerHTML += `
       <tr class="hover:bg-slate-50 transition-all border-b border-slate-100">
@@ -76,7 +90,7 @@ async function loadViolations() {
   lucide.createIcons();
 }
 
-// FUNGSI PENDUKUNG (TETAP SAMA)
+// --- FUNGSI PENDUKUNG ---
 function formatDate(dateString) {
   if (!dateString) return '-';
   return new Date(dateString).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -87,26 +101,5 @@ async function deleteViolation(id) {
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
   const result = await apiRequest({ action: 'deleteViolation', id, school_npsn: user.school_npsn });
   alert(result.message);
-  loadViolations();
+  loadViolations(true); // Refresh
 }
-
-async function deleteAllViolations() {
-  if (!confirm('Hapus semua data pelanggaran?')) return;
-  const user = JSON.parse(localStorage.getItem('smart_exam_user'));
-  const result = await apiRequest({ action: 'deleteAllViolations', school_npsn: user.school_npsn });
-  alert(result.message);
-  loadViolations();
-}
-
-function printViolations() { window.print(); }
-
-// --- INISIALISASI ---
-// Tambahkan listener ke input tanggal jika ada
-const dateFilter = document.getElementById('dateFilter');
-if (dateFilter) {
-  dateFilter.value = new Date().toISOString().split('T')[0];
-  dateFilter.addEventListener('change', loadViolations);
-}
-
-loadViolations();
-setInterval(loadViolations, 5000);
