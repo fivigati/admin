@@ -196,23 +196,21 @@ function updateFilters(data) {
   roomSet.forEach(r => roomFilter.innerHTML += `<option value="${r}">${r}</option>`);
 }
 
-// Fungsi pencarian & filter (panggil ini saat input berubah)
-function filterViolations() {
-  const searchTerm = document.getElementById('searchViolation').value.toLowerCase();
-  const selectedClass = document.getElementById('filterClass').value;
-  const selectedRoom = document.getElementById('filterRoom').value;
-
+// Fungsi ini dipanggil otomatis setiap kali user mengetik
+function universalFilter() {
+  const searchTerm = document.getElementById('searchUniversal').value.toLowerCase();
   const rows = document.querySelectorAll('#violationsTable tr');
-  rows.forEach(row => {
-    const text = row.innerText.toLowerCase();
-    const studentClass = row.dataset.class; // Tambahkan data-class di tr saat rendering
-    const studentRoom = row.dataset.room;
-    
-    const matchSearch = text.includes(searchTerm);
-    const matchClass = selectedClass === "" || studentClass === selectedClass;
-    const matchRoom = selectedRoom === "" || studentRoom === selectedRoom;
 
-    row.style.display = (matchSearch && matchClass && matchRoom) ? '' : 'none';
+  rows.forEach(row => {
+    // Kita ambil semua teks di dalam baris tersebut
+    const rowText = row.innerText.toLowerCase();
+    
+    // Jika teks di baris mengandung kata yang diketik, tampilkan. Jika tidak, sembunyikan.
+    if (rowText.includes(searchTerm)) {
+      row.style.display = ''; 
+    } else {
+      row.style.display = 'none'; 
+    }
   });
 }
 
