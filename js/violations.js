@@ -202,7 +202,7 @@ async function printViolations() {
         </table>
         
         <div class="footer">
-          <p>${kotaSekolah}, ........................... 20....</p>
+          <p>..............., .................... 20....</p>
           <p>Pengawas Ujian,</p><br><br><br>
           <p><b>( ........................................... )</b></p>
         </div>
