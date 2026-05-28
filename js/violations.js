@@ -117,10 +117,21 @@ async function deleteAllViolations() {
 // --- FUNGSI PRINT FINAL ---
 async function printViolations() {
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
-  const res = await apiRequest({ action: 'getSchoolConfig', school_npsn: user.school_npsn });
-  const sc = res.data; 
   
-  const kotaSekolah = sc.city || "Malang"; // MENGAMBIL KOTA DARI DATA CONFIG
+  // Memastikan kita mendapatkan respons yang benar
+  const res = await apiRequest({ action: 'getSchoolConfig', school_npsn: user.school_npsn });
+  
+  // Jika res sukses, biasanya datanya ada di res.data
+  // Jika respons backend Anda langsung memberikan objek sekolah, maka gunakan 'res'
+  const sc = res.data || res; 
+
+  // Cek apakah data sekolah benar-benar ada
+  if (!sc || !sc.school_name) {
+    console.error("Gagal memuat konfigurasi sekolah:", res);
+    alert("Data konfigurasi sekolah tidak ditemukan. Coba refresh halaman.");
+    return;
+  }
+  const kotaSekolah = sc.city || "Malang";
   const datePicker = document.getElementById("dateFilter");
   const tglTerpilih = datePicker ? datePicker.value : new Date().toLocaleDateString();
   
