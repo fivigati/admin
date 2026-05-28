@@ -117,10 +117,14 @@ async function deleteAllViolations() {
 async function printViolations() {
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
   const res = await apiRequest({ action: 'getSchoolConfig', school_npsn: user.school_npsn });
-  // Perbaikan akses data sekolah sesuai log Anda
-  const sc = res.data ? res.data.school : res.school; 
-  
-  if (!sc) { alert("Data sekolah gagal dimuat."); return; }
+
+  const sc = res.data && res.data.school ? res.data.school : (res.data || res); 
+
+  if (!sc || !sc.school_name) {
+    console.error("Struktur data sekolah yang diterima:", res);
+    alert("Data sekolah gagal dimuat. Cek console untuk detail.");
+    return;
+  }
   
   const kotaSekolah = sc.city || "Malang";
   const tglTerpilih = dateFilter ? dateFilter.value : new Date().toLocaleDateString();
