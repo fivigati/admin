@@ -1,29 +1,20 @@
 async function loadViolations() {
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
+  if (!user) { window.location.href = 'index.html'; return; }
 
-  if (!user) {
-    window.location.href = 'index.html';
-    return;
-  }
-
-  // --- PERBAIKAN LOGIKA BANNER PREMIUM LOCK ---
-  // Pastikan isPremium hanya bernilai true jika datanya benar-benar 'premium'
-  const isPremium = user.plan_type && user.plan_type.toLowerCase().trim() === 'premium';
-
-  if (!isPremium) {
+  // LOGIKA BANNER PREMIUM (Sekarang disamakan ukurannya dengan live-session)
+  if (user.plan_type && user.plan_type.toLowerCase().trim() !== 'premium') {
     const tableContainer = document.getElementById('violationsTable');
     if (tableContainer) {
       tableContainer.innerHTML = `
-        <div class="flex flex-col items-center justify-center text-center p-12 mx-auto mt-6 max-w-xl bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl">
+        <div class="flex flex-col items-center justify-center p-12 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 m-4">
           <div class="text-6xl mb-4">🔒</div>
-          <h3 class="text-xl font-black tracking-tight text-slate-800">Fitur Premium Terkunci</h3>
-          <p class="text-sm text-slate-500 mt-3 leading-relaxed">
-            Log dan riwayat pelanggaran siswa secara detail hanya tersedia untuk akun Pro. Tingkatkan langganan Anda untuk membuka akses penuh.
-          </p>
+          <h3 class="text-lg font-bold text-slate-800">Fitur Premium Terkunci</h3>
+          <p class="text-slate-500 max-w-sm mt-2">Log pelanggaran detail hanya tersedia untuk akun Pro. Silakan upgrade untuk membuka akses.</p>
         </div>
       `;
     }
-    return; // Hentikan fungsi di sini, jangan panggil API
+    return;
   }
   // --------------------------------------------
 
