@@ -111,27 +111,32 @@ async function deleteAllViolations() {
   loadViolations(true);
 }
 
+// --- FUNGSI PRINT FINAL ---
 async function printViolations() {
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
-  
-  // 1. Ambil data sekolah terbaru dari backend
   const res = await apiRequest({ action: 'getSchoolConfig', school_npsn: user.school_npsn });
-  const sc = res.data; // Data sekolah dari sheet schools
-
+  const sc = res.data; 
+  
+  const kotaSekolah = sc.city || "Malang"; // MENGAMBIL KOTA DARI DATA CONFIG
   const datePicker = document.getElementById("dateFilter");
   const tglTerpilih = datePicker ? datePicker.value : new Date().toLocaleDateString();
+  
+  // Ambil baris yang tidak disembunyikan oleh filter (hanya yang tampil)
   const rows = document.querySelectorAll("#violationsTable tr");
   
   let tableContent = "";
   rows.forEach(row => {
-    const cols = row.querySelectorAll("td");
-    if(cols.length === 5) {
-      tableContent += `<tr>
-        <td style="padding: 8px; border: 1px solid black; text-align: center;">${cols[0].innerText}</td>
-        <td style="padding: 8px; border: 1px solid black;">${cols[1].innerText}</td>
-        <td style="padding: 8px; border: 1px solid black; text-align: center;">${cols[2].innerText}</td>
-        <td style="padding: 8px; border: 1px solid black;">${cols[3].innerText}</td>
-      </tr>`;
+    // Hanya cetak yang tampil (style.display !== 'none')
+    if(row.style.display !== 'none') {
+      const cols = row.querySelectorAll("td");
+      if(cols.length === 5) {
+        tableContent += `<tr>
+          <td style="padding: 8px; border: 1px solid black; text-align: center;">${cols[0].innerText}</td>
+          <td style="padding: 8px; border: 1px solid black;">${cols[1].innerText}</td>
+          <td style="padding: 8px; border: 1px solid black; text-align: center;">${cols[2].innerText}</td>
+          <td style="padding: 8px; border: 1px solid black;">${cols[3].innerText}</td>
+        </tr>`;
+      }
     }
   });
 
@@ -142,15 +147,16 @@ async function printViolations() {
         <title>Berita Acara - ${sc.school_name}</title>
         <style>
           @page { size: A4; margin: 20mm; }
-          body { font-family: "Times New Roman", serif; color: black; }
+          body { font-family: "Times New Roman", serif; color: black; line-height: 1.2; }
           .kop-container { display: flex; align-items: center; border-bottom: 4px double black; padding-bottom: 10px; margin-bottom: 20px; text-align: center; }
           .logo { width: 80px; margin-right: 15px; }
           .kop-text { flex-grow: 1; text-align: center; }
           .kop-text h2 { margin: 0; font-size: 12pt; }
           .kop-text h1 { margin: 0; font-size: 16pt; font-weight: bold; }
           .title { text-align: center; font-weight: bold; text-decoration: underline; margin: 20px 0; font-size: 14pt; }
-          table { width: 100%; border-collapse: collapse; }
-          th, td { border: 1px solid black; padding: 8px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid black; padding: 8px; font-size: 10pt; }
+          .footer { margin-top: 40px; float: right; width: 300px; text-align: center; }
         </style>
       </head>
       <body>
@@ -170,16 +176,18 @@ async function printViolations() {
           </thead>
           <tbody>${tableContent}</tbody>
         </table>
-        <div style="margin-top:50px; text-align:right;">
-          <p>${kotaSekolah}, ${new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}</p>
+        <div class="footer">
+          <p>${kotaSekolah}, ........................... 20....</p>
           <p>Pengawas Ujian,</p><br><br><br>
-          <p><b>( ____________________ )</b></p>
+          <p><b>( ........................................... )</b></p>
         </div>
+        <script>window.onload = function() { window.print(); window.close(); }<\/script>
       </body>
     </html>
   `);
   printWindow.document.close();
 }
+
 // Fungsi untuk update filter dropdown secara otomatis
 function updateFilters(data) {
   const classSet = new Set(data.map(item => item.student_class));
