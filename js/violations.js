@@ -192,7 +192,7 @@ async function printViolations() {
         
         <div class="title">BERITA ACARA LAPORAN PELANGGARAN UJIAN</div>
         
-        <p>Pada hari ini, tanggal <b>${tglTerpilih}</b>, dilaporkan pelanggaran sebagai berikut:</p>
+        <p>Pada hari ini, tanggal <b>${tglTerpilih}</b>, telah dilaporkan aktivitas pelanggaran pada sistem Smart Exam sebagai berikut:</p>
         
         <table>
           <thead>
