@@ -121,3 +121,11 @@ async function deleteAllViolations() {
 function printViolations() {
   window.print();
 }
+
+// Tambahkan ini di bagian paling bawah file js/violations.js
+loadViolations();
+
+// Jika Ibu ingin halaman pelanggaran juga ter-update otomatis seperti Live Session:
+setInterval(() => {
+  loadViolations();
+}, 5000);
