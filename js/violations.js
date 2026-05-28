@@ -13,7 +13,7 @@ async function loadViolations() {
               <div class="text-5xl mb-3">🔒</div>
               <h3 class="text-lg font-bold text-slate-800">Fitur Premium Terkunci</h3>
               <p class="text-sm text-slate-500 max-w-sm mt-2">
-                Log dan riwayat pelanggaran siswa secara detail hanya tersedia untuk akun Pro. Silakan upgrade untuk membuka akses.
+                Log dan riwayat pelanggaran hanya tersedia untuk akun Pro. Silakan upgrade untuk membuka akses.
               </p>
             </div>
           </td>
