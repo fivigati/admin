@@ -99,11 +99,26 @@ function formatDate(dateString) {
   return new Date(dateString).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-async function deleteViolation(id) {
-  if (!confirm('Hapus log?')) return;
-  const user = JSON.parse(localStorage.getItem('smart_exam_user'));
-  await apiRequest({ action: 'deleteViolation', id, school_npsn: user.school_npsn });
-  loadViolations(true);
+function resetViolationStudent(data) {
+  const sheet = getSheet(CONFIG.SHEETS.VIOLATIONS);
+  const values = sheet.getDataRange().getValues();
+  
+  // Looping dari bawah ke atas agar deleteRow tidak merusak indeks
+  for (let i = values.length - 1; i >= 1; i--) {
+    // Pastikan indeks kolom nisn sesuai dengan sheet Anda (misal kolom index 2 adalah nisn)
+    const nisn = String(values[i][2]).trim(); 
+    const schoolNpsn = String(values[i][1]).trim();
+    if (
+      nisn === String(data.student_nisn).trim()
+      && schoolNpsn === String(data.school_npsn).trim()
+    ) {
+      sheet.deleteRow(i + 1);
+    }
+  }
+  return jsonResponse({
+    success: true,
+    message: 'Semua log pelanggaran siswa tersebut berhasil dihapus'
+  });
 }
 
 async function deleteAllViolations() {
