@@ -238,4 +238,11 @@ function universalFilter() {
 
 // --- INISIALISASI ---
 loadViolations(true);
-setInterval(() => loadViolations(false), 5000);
+// Ganti bagian setInterval di akhir file violations.js menjadi:
+setInterval(() => {
+  // Hanya auto-refresh jika kolom pencarian kosong (user tidak sedang mencari)
+  const searchInput = document.getElementById('searchUniversal');
+  if (searchInput && searchInput.value === "") {
+    loadViolations(false);
+  }
+}, 5000);
