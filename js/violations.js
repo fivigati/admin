@@ -103,3 +103,16 @@ async function deleteViolation(id) {
   alert(result.message);
   loadViolations(true); // Refresh
 }
+async function deleteAllViolations() {
+  if (!confirm('Hapus semua data pelanggaran?')) return;
+  const user = JSON.parse(localStorage.getItem('smart_exam_user'));
+  const result = await apiRequest({ action: 'deleteAllViolations', school_npsn: user.school_npsn });
+  alert(result.message);
+  loadViolations(true);
+}
+
+function printViolations() { window.print(); }
+
+// --- INISIALISASI ---
+loadViolations(true);
+setInterval(() => loadViolations(false), 5000);
