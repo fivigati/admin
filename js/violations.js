@@ -3,7 +3,6 @@ const dateFilter = document.getElementById('dateFilter');
 if (dateFilter) {
   dateFilter.value = new Date().toISOString().split('T')[0];
   dateFilter.addEventListener('change', () => {
-    // Saat ganti tanggal, panggil loadViolations (dengan loading)
     loadViolations(true); 
   });
 }
@@ -91,6 +90,7 @@ async function loadViolations(showLoading = false) {
     `;
   });
 lucide.createIcons();
+universalFilter();
 }
 
 // --- FUNGSI PENDUKUNG ---
@@ -100,56 +100,38 @@ function formatDate(dateString) {
 }
 
 async function deleteViolation(id) {
-  if (!confirm('Hapus log pelanggaran ini?')) return;
+  if (!confirm('Hapus log?')) return;
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
-  const result = await apiRequest({ action: 'deleteViolation', id, school_npsn: user.school_npsn });
-  alert(result.message);
-  loadViolations(true); // Refresh
+  await apiRequest({ action: 'deleteViolation', id, school_npsn: user.school_npsn });
+  loadViolations(true);
 }
+
 async function deleteAllViolations() {
-  if (!confirm('Hapus semua data pelanggaran?')) return;
+  if (!confirm('Hapus semua?')) return;
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
-  const result = await apiRequest({ action: 'deleteAllViolations', school_npsn: user.school_npsn });
-  alert(result.message);
+  await apiRequest({ action: 'deleteAllViolations', school_npsn: user.school_npsn });
   loadViolations(true);
 }
 
 // --- FUNGSI PRINT FINAL ---
 async function printViolations() {
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
-  
-  // Memastikan kita mendapatkan respons yang benar
   const res = await apiRequest({ action: 'getSchoolConfig', school_npsn: user.school_npsn });
+  // Perbaikan akses data sekolah sesuai log Anda
+  const sc = res.data ? res.data.school : res.school; 
   
-  // Jika res sukses, biasanya datanya ada di res.data
-  // Jika respons backend Anda langsung memberikan objek sekolah, maka gunakan 'res'
-  const sc = res.data || res; 
-
-  // Cek apakah data sekolah benar-benar ada
-  if (!sc || !sc.school_name) {
-    console.error("Gagal memuat konfigurasi sekolah:", res);
-    alert("Data konfigurasi sekolah tidak ditemukan. Coba refresh halaman.");
-    return;
-  }
+  if (!sc) { alert("Data sekolah gagal dimuat."); return; }
+  
   const kotaSekolah = sc.city || "Malang";
-  const datePicker = document.getElementById("dateFilter");
-  const tglTerpilih = datePicker ? datePicker.value : new Date().toLocaleDateString();
-  
-  // Ambil baris yang tidak disembunyikan oleh filter (hanya yang tampil)
+  const tglTerpilih = dateFilter ? dateFilter.value : new Date().toLocaleDateString();
   const rows = document.querySelectorAll("#violationsTable tr");
   
   let tableContent = "";
   rows.forEach(row => {
-    // Hanya cetak yang tampil (style.display !== 'none')
     if(row.style.display !== 'none') {
       const cols = row.querySelectorAll("td");
-      if(cols.length === 5) {
-        tableContent += `<tr>
-          <td style="padding: 8px; border: 1px solid black; text-align: center;">${cols[0].innerText}</td>
-          <td style="padding: 8px; border: 1px solid black;">${cols[1].innerText}</td>
-          <td style="padding: 8px; border: 1px solid black; text-align: center;">${cols[2].innerText}</td>
-          <td style="padding: 8px; border: 1px solid black;">${cols[3].innerText}</td>
-        </tr>`;
+      if(cols.length >= 4) {
+        tableContent += `<tr><td style="border:1px solid black; text-align:center;">${cols[0].innerText}</td><td style="border:1px solid black;">${cols[1].innerText}</td><td style="border:1px solid black; text-align:center;">${cols[2].innerText}</td><td style="border:1px solid black;">${cols[3].innerText}</td></tr>`;
       }
     }
   });
@@ -218,31 +200,17 @@ function updateFilters(data) {
   roomSet.forEach(r => roomFilter.innerHTML += `<option value="${r}">${r}</option>`);
 }
 
-// Fungsi ini dipanggil otomatis setiap kali user mengetik
 function universalFilter() {
   const searchTerm = document.getElementById('searchUniversal').value.toLowerCase();
   const rows = document.querySelectorAll('#violationsTable tr');
-
   rows.forEach(row => {
-    // Kita ambil semua teks di dalam baris tersebut
-    const rowText = row.innerText.toLowerCase();
-    
-    // Jika teks di baris mengandung kata yang diketik, tampilkan. Jika tidak, sembunyikan.
-    if (rowText.includes(searchTerm)) {
-      row.style.display = ''; 
-    } else {
-      row.style.display = 'none'; 
-    }
+    row.style.display = row.innerText.toLowerCase().includes(searchTerm) ? '' : 'none';
   });
 }
 
-// --- INISIALISASI ---
+// --- INTERVAL ---
 loadViolations(true);
-// Ganti bagian setInterval di akhir file violations.js menjadi:
 setInterval(() => {
-  // Hanya auto-refresh jika kolom pencarian kosong (user tidak sedang mencari)
   const searchInput = document.getElementById('searchUniversal');
-  if (searchInput && searchInput.value === "") {
-    loadViolations(false);
-  }
+  if (!searchInput || searchInput.value === "") loadViolations(false);
 }, 5000);
