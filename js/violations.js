@@ -230,10 +230,34 @@ function updateFilters(data) {
 
 function universalFilter() {
   const searchTerm = document.getElementById('searchUniversal').value.toLowerCase();
-  const rows = document.querySelectorAll('#violationsTable tr');
+  const table = document.getElementById('violationsTable');
+  const rows = table.querySelectorAll('tr');
+  let visibleCount = 0;
+
   rows.forEach(row => {
-    row.style.display = row.innerText.toLowerCase().includes(searchTerm) ? '' : 'none';
+    // Abaikan jika baris tersebut adalah baris pesan "Data tidak ditemukan"
+    if (row.id === 'no-data-row') return;
+
+    const rowText = row.innerText.toLowerCase();
+    if (rowText.includes(searchTerm)) {
+      row.style.display = '';
+      visibleCount++;
+    } else {
+      row.style.display = 'none';
+    }
   });
+
+  // Hapus pesan lama jika ada
+  const existingNoData = document.getElementById('no-data-row');
+  if (existingNoData) existingNoData.remove();
+
+  // Jika tidak ada data yang tampil, tambahkan baris pesan
+  if (visibleCount === 0) {
+    const noDataRow = document.createElement('tr');
+    noDataRow.id = 'no-data-row';
+    noDataRow.innerHTML = `<td colspan="5" class="py-10 text-center text-slate-400 text-sm">Data tidak ditemukan</td>`;
+    table.appendChild(noDataRow);
+  }
 }
 
 // --- INTERVAL ---
