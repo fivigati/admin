@@ -332,3 +332,15 @@ setInterval(() => {
   loadSessions();
 
 }, 5000);
+
+async function initLiveSession() {
+    // Pengecekan instan
+    if (!checkPremiumAccess()) return; 
+
+    // Jika lolos, baru jalankan logika fetch data aslinya
+    try {
+        // fetch data...
+    } catch (e) {
+        console.error(e);
+    }
+}
