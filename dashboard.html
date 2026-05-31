@@ -368,26 +368,54 @@
         </div>
 
 <div id="view-students" class="page-view hidden">
-    <div class="flex gap-2 mb-4">
-      <button onclick="bukaModalBulk()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold">+ Bulk Import</button>
-      <button onclick="hapusTampilan()" class="bg-rose-500 text-white px-4 py-2 rounded-lg text-sm font-bold">Hapus Data Terfilter</button>
+  
+  <!-- Header Action & Search -->
+  <div class="mb-6 flex flex-col md:flex-row justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    
+    <div class="flex flex-1 flex-wrap gap-3">
+      <div class="relative flex-1 min-w-[280px]">
+        <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"></i>
+        <input 
+          type="text" 
+          id="searchUniversalStudents" 
+          placeholder="Cari NISN, nama, kelas, atau ruang..." 
+          class="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-sm text-slate-700 outline-none transition-all focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+          oninput="filterStudents()">
+      </div>
     </div>
 
-    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <table class="w-full text-xs text-left text-slate-600">
-          <thead class="text-[10px] text-slate-400 uppercase bg-slate-50">
-              <tr>
-                  <th class="p-3">Id Peserta</th>
-                  <th class="p-3">Identitas Peserta</th>
-                  <th class="p-3">Keterangan</th>
-                  <th class="p-3">Status</th>
-                  <th class="p-3 text-center">Aksi</th>
-              </tr>
-          </thead>
-          <tbody id="siswa-tbody" class="bg-white divide-y divide-slate-100">
-              </tbody>
+    <div class="flex flex-wrap items-center gap-3">
+      <button onclick="bukaModalBulk()" class="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-indigo-700">
+        <i data-lucide="upload" class="h-4 w-4"></i>
+        <span>Bulk Import</span>
+      </button>
+      
+      <button onclick="hapusTampilan()" class="flex items-center gap-2 rounded-xl bg-rose-50 px-5 py-2.5 text-sm font-semibold text-rose-600 transition-all hover:bg-rose-100 hover:text-rose-700">
+        <i data-lucide="trash-2" class="h-4 w-4"></i>
+        <span>Hapus Data Terfilter</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabel Data Siswa -->
+  <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead class="bg-slate-50/80">
+          <tr class="border-b border-slate-200">
+            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Id Peserta</th>
+            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Identitas Peserta</th>
+            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Keterangan</th>
+            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Status</th>
+            <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-500">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="siswa-tbody" class="divide-y divide-slate-100">
+          <!-- Data dirender melalui students.js -->
+        </tbody>
       </table>
     </div>
+  </div>
 </div>
 
         <div id="view-exams" class="page-view hidden">
