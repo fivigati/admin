@@ -367,24 +367,28 @@
           </div>
         </div>
 
-<div class="flex gap-2 mb-4">
-  <button onclick="bukaModalBulk()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold">+ Bulk Import</button>
-  <button onclick="hapusTampilan()" class="bg-rose-500 text-white px-4 py-2 rounded-lg text-sm font-bold">Hapus Data Terfilter</button>
-</div>
+<div id="view-students" class="page-view hidden">
+    <div class="flex gap-2 mb-4">
+      <button onclick="bukaModalBulk()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold">+ Bulk Import</button>
+      <button onclick="hapusTampilan()" class="bg-rose-500 text-white px-4 py-2 rounded-lg text-sm font-bold">Hapus Data Terfilter</button>
+    </div>
 
-<table class="w-full text-xs text-left text-slate-600">
-    <thead class="text-[10px] text-slate-400 uppercase bg-slate-50">
-        <tr>
-            <th class="p-3">Id Peserta</th>
-            <th class="p-3">Identitas Peserta</th>
-            <th class="p-3">Keterangan</th>
-            <th class="p-3">Status</th>
-            <th class="p-3 text-center">Aksi</th>
-        </tr>
-    </thead>
-    <tbody id="siswa-tbody" class="bg-white divide-y divide-slate-100">
-        </tbody>
-</table>
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <table class="w-full text-xs text-left text-slate-600">
+          <thead class="text-[10px] text-slate-400 uppercase bg-slate-50">
+              <tr>
+                  <th class="p-3">Id Peserta</th>
+                  <th class="p-3">Identitas Peserta</th>
+                  <th class="p-3">Keterangan</th>
+                  <th class="p-3">Status</th>
+                  <th class="p-3 text-center">Aksi</th>
+              </tr>
+          </thead>
+          <tbody id="siswa-tbody" class="bg-white divide-y divide-slate-100">
+              </tbody>
+      </table>
+    </div>
+</div>
 
         <div id="view-exams" class="page-view hidden">
           <h2 class="text-2xl font-bold">Memuat Manajemen Ujian...</h2>
