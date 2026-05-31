@@ -77,9 +77,8 @@ async function loadSessions(showLoading = false) {
 
         <td class="px-6 py-4">
           <div class="flex flex-col gap-1.5 items-start">
-            ${renderStatus(session.session_status)}
+            ${renderStatus(session.last_status)}
             ${renderFullscreen(session.fullscreen_status)}
-            ${renderViolation(session.violation_count)}
           </div>
         </td>
 
@@ -116,17 +115,6 @@ function renderFullscreen(status) {
     return `<div class="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-600"><div class="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>Layar Penuh</div>`;
   }
   return `<div class="inline-flex items-center gap-1.5 rounded-md bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-600">⚠️ Keluar Layar</div>`;
-}
-
-function renderViolation(count) {
-  count = Number(count);
-  if (count >= 5) {
-    return `<div class="inline-flex rounded-md bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-700">${count} Pelanggaran</div>`;
-  }
-  if (count >= 2) {
-    return `<div class="inline-flex rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-600">${count} Pelanggaran</div>`;
-  }
-  return ``; // Sembunyikan kalau nol agar UI bersih
 }
 
 function parseDeviceInfo(deviceInfo) {
