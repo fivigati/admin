@@ -137,15 +137,42 @@ function formatLastSeen(dateString) {
   return date.toLocaleString('id-ID', { hour: '2-digit', minute:'2-digit' });
 }
 
-function renderStatus(status) {
-  const s = String(status).toLowerCase();
+function renderStatus(statusValue) {
+  // Ambil teks dari Sheets, jadikan huruf kecil untuk pencocokan yang aman
+  const s = String(statusValue || '').toLowerCase();
+  
+  // 🟢 ONLINE
   if (s.includes('online')) {
-    return `<div class="inline-flex rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-black tracking-wide text-indigo-600">ONLINE</div>`;
+    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-black tracking-wide text-indigo-600">🟢 Online</div>`;
   }
-  if (s.includes('reconnect')) {
-    return `<div class="inline-flex rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-black tracking-wide text-amber-600">RECONNECT</div>`;
+  
+  // ✅ SELESAI
+  if (s.includes('selesai')) {
+    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-black tracking-wide text-emerald-600">✅ Selesai</div>`;
   }
-  return `<div class="inline-flex rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-black tracking-wide text-slate-500">OFFLINE</div>`;
+  
+  // ⛔ DIKELUARKAN (KICKED)
+  if (s.includes('dikeluarkan')) {
+    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-rose-50 px-2 py-0.5 text-[10px] font-black tracking-wide text-rose-600">⛔ Diekluarkan</div>`;
+  }
+  
+  // ⏳ WAKTU HABIS (TIMEOUT)
+  if (s.includes('waktu habis')) {
+    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-black tracking-wide text-slate-700">⏳ Waktu Habis</div>`;
+  }
+
+  // ⚠️ KELUAR LAMAN (AWAY)
+  if (s.includes('keluar dari laman')) {
+    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-black tracking-wide text-amber-600">⚠️ Keluar Laman Ujian</div>`;
+  }
+
+  // 🔴 OFFLINE
+  if (s.includes('offline')) {
+    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-black tracking-wide text-slate-500">🔴 Offline</div>`;
+  }
+
+  // Fallback (jika datanya "⚪" atau kosong)
+  return `<div class="inline-flex rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-400">⚪ Belum Mulai</div>`;
 }
 
 // ==========================================
