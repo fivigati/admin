@@ -396,32 +396,56 @@
 </div>
 
 <div id="view-violations" class="page-view hidden">
-  <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-    <div class="flex flex-wrap gap-3">
-      <input 
-        type="text" 
-        id="searchUniversal" 
-        placeholder="Cari nama siswa, kelas, atau ruang..." 
-        class="flex-1 min-w-[300px] rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-indigo-500"
-        oninput="universalFilter()">
+  
+  <div class="mb-5 px-1">
+    <h2 class="text-xl font-bold text-slate-800">Laporan Pelanggaran</h2>
+    <p class="text-sm text-slate-500 mt-1">Pantau indikasi kecurangan dan aktivitas tidak wajar peserta ujian.</p>
+  </div>
+
+  <div class="mb-6 flex flex-col md:flex-row justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    
+    <div class="flex flex-1 flex-wrap gap-3">
+      <div class="relative flex-1 min-w-[280px]">
+        <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"></i>
+        <input 
+          type="text" 
+          id="searchUniversal" 
+          placeholder="Cari nama, kelas, ruang, atau mapel..." 
+          class="w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-sm text-slate-700 outline-none transition-all focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+          oninput="universalFilter()">
+      </div>
       
-      <input type="date" id="dateFilter" class="rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-indigo-500 text-slate-600">
+      <div class="relative">
+        <input 
+          type="date" 
+          id="dateFilter" 
+          class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-600 outline-none transition-all focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <button onclick="printViolations()" class="flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-slate-800 focus:ring-2 focus:ring-slate-900 focus:ring-offset-1">
+        <i data-lucide="printer" class="h-4 w-4"></i>
+        <span>Print Berita Acara</span>
+      </button>
       
-      <button onclick="printViolations()" class="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">Print</button>
-      <button onclick="deleteAllViolations()" class="rounded-xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white hover:bg-rose-600">Hapus Semua</button>
+      <button onclick="deleteAllViolations()" class="flex items-center gap-2 rounded-xl bg-rose-50 px-5 py-2.5 text-sm font-semibold text-rose-600 transition-all hover:bg-rose-100 hover:text-rose-700">
+        <i data-lucide="trash-2" class="h-4 w-4"></i>
+        <span>Hapus Semua</span>
+      </button>
     </div>
   </div>
 
   <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
     <div class="overflow-x-auto">
       <table class="min-w-full">
-        <thead class="bg-slate-50">
+        <thead class="bg-slate-50/80">
           <tr class="border-b border-slate-200">
-            <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Waktu</th>
-            <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Nama Siswa</th>
-            <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Mapel</th>
-            <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Pelanggaran</th>
-            <th class="px-5 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-500">Aksi</th>
+            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Waktu</th>
+            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Identitas Siswa</th>
+            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Mata Pelajaran</th>
+            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Jenis Pelanggaran</th>
+            <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-500">Aksi</th>
           </tr>
         </thead>
         <tbody id="violationsTable" class="divide-y divide-slate-100">
