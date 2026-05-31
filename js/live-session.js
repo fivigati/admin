@@ -76,10 +76,8 @@ async function loadSessions(showLoading = false) {
         </td>
 
         <td class="px-6 py-4">
-          <div class="flex flex-col gap-1.5 items-start">
-            ${renderStatus(session.last_status)}
-            ${renderFullscreen(session.fullscreen_status)}
-          </div>
+          <!-- HANYA MENAMPILKAN LAST STATUS SESUAI PERMINTAAN -->
+          ${renderStatus(session.last_status || session.last_session)}
         </td>
 
         <td class="px-6 py-4 text-sm text-slate-600">
@@ -110,13 +108,6 @@ async function loadSessions(showLoading = false) {
 // ==========================================
 // FUNGSI PENDUKUNG UI BADGE
 // ==========================================
-function renderFullscreen(status) {
-  if (status === 'FULL') {
-    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-600"><div class="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>Layar Penuh</div>`;
-  }
-  return `<div class="inline-flex items-center gap-1.5 rounded-md bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-600">⚠️ Keluar Layar</div>`;
-}
-
 function parseDeviceInfo(deviceInfo) {
   if (!deviceInfo) return 'Unknown Device';
   const info = deviceInfo.toLowerCase();
@@ -141,38 +132,40 @@ function renderStatus(statusValue) {
   // Ambil teks dari Sheets, jadikan huruf kecil untuk pencocokan yang aman
   const s = String(statusValue || '').toLowerCase();
   
-  // 🟢 ONLINE
+  // Font diubah jadi text-[11px] font-semibold (Tanpa tracking-wide / ALL CAPS) agar estetik
+  
+  // 🟢 Online
   if (s.includes('online')) {
-    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-black tracking-wide text-indigo-600">🟢 Online</div>`;
+    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-600">🟢 Online</div>`;
   }
   
-  // ✅ SELESAI
+  // ✅ Selesai
   if (s.includes('selesai')) {
-    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-black tracking-wide text-emerald-600">✅ Selesai</div>`;
+    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">✅ Selesai</div>`;
   }
   
-  // ⛔ DIKELUARKAN (KICKED)
+  // ⛔ Dikeluarkan
   if (s.includes('dikeluarkan')) {
-    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-rose-50 px-2 py-0.5 text-[10px] font-black tracking-wide text-rose-600">⛔ Diekluarkan</div>`;
+    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-rose-50 px-2.5 py-1 text-[11px] font-semibold text-rose-600">⛔ Dikeluarkan</div>`;
   }
   
-  // ⏳ WAKTU HABIS (TIMEOUT)
+  // ⏳ Waktu Habis
   if (s.includes('waktu habis')) {
-    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-black tracking-wide text-slate-700">⏳ Waktu Habis</div>`;
+    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700">⏳ Waktu Habis</div>`;
   }
 
-  // ⚠️ KELUAR LAMAN (AWAY)
+  // ⚠️ Keluar Laman
   if (s.includes('keluar dari laman')) {
-    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-black tracking-wide text-amber-600">⚠️ Keluar Laman Ujian</div>`;
+    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-600">⚠️ Keluar Laman</div>`;
   }
 
-  // 🔴 OFFLINE
+  // 🔴 Offline
   if (s.includes('offline')) {
-    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-black tracking-wide text-slate-500">🔴 Offline</div>`;
+    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500">🔴 Offline</div>`;
   }
 
   // Fallback (jika datanya "⚪" atau kosong)
-  return `<div class="inline-flex rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-400">⚪ Belum Mulai</div>`;
+  return `<div class="inline-flex rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-400">⚪ Belum Mulai</div>`;
 }
 
 // ==========================================
@@ -217,7 +210,7 @@ async function deleteSession(id) {
   if (!confirm('Peringatan: Mereset sesi akan membuat siswa ter-logout dan harus login kembali. Lanjutkan?')) return;
 
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
-  const result = await apiRequest({ action: 'deleteSession', id, school_npsn: user.school_npsn });
+  await apiRequest({ action: 'deleteSession', id, school_npsn: user.school_npsn });
   loadSessions(true);
 }
 
@@ -225,7 +218,7 @@ async function deleteAllSessions() {
   if (!confirm('BAHAYA: Anda yakin ingin menghapus SELURUH sesi aktif? Semua siswa akan ter-logout paksa.')) return;
 
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
-  const result = await apiRequest({ action: 'deleteAllSessions', school_npsn: user.school_npsn });
+  await apiRequest({ action: 'deleteAllSessions', school_npsn: user.school_npsn });
   loadSessions(true);
 }
 
