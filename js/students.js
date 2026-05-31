@@ -1,87 +1,75 @@
 /* =====================================================
-   STUDENTS MANAGEMENT MODULE
+   STUDENTS MODULE (MENGGUNAKAN INDEKS STATIS)
    ===================================================== */
 
-// 1. Memuat data siswa ke tabel
-async function loadDataSiswa() {
+// Render Tabel Siswa
+function renderTabelSiswa(dataList) {
     const tbody = document.getElementById('siswa-tbody');
-    tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center">Memuat data...</td></tr>';
+    
+    if (!dataList || dataList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-slate-400">Data siswa tidak ditemukan.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = dataList.map(s => {
+        // Logika Status Badge
+        const isActive = s.account_status?.toString().toLowerCase() === 'active';
+        const badgeClass = isActive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600';
+        const badgeText = isActive ? 'Aktif' : 'Blokir';
+        
+        return `
+        <tr class="hover:bg-slate-50 transition-colors">
+            <td class="p-3 font-black text-slate-700">${s.nisn}</td>
+            <td class="p-3 flex items-center gap-3">
+                <div class="w-10 h-12 rounded overflow-hidden bg-slate-200 border border-slate-300 shrink-0">
+                    ${s.pic_url ? `<img src="${s.pic_url}" class="w-full h-full object-cover">` : 
+                    `<div class="flex items-center justify-center h-full text-slate-400"><i class="fas fa-user text-sm"></i></div>`}
+                </div>
+                <div>
+                    <div class="font-bold text-slate-800">${s.full_name}</div>
+                    <div class="text-[10px] text-slate-400">${s.class_name || '-'} | ${s.room_name || '-'}</div>
+                </div>
+            </td>
+            <td class="p-3 text-[10px] text-slate-500">${s.description || '-'}</td>
+            <td class="p-3">
+                <span class="px-2 py-1 rounded-full text-[9px] font-bold uppercase ${badgeClass}">
+                    ${badgeText}
+                </span>
+            </td>
+            <td class="p-3 text-center text-slate-400">
+                <button onclick="editSiswa('${s.nisn}')" class="hover:text-indigo-600 transition p-1"><i class="fas fa-edit"></i></button>
+                <button onclick="hapusSiswa('${s.nisn}')" class="hover:text-rose-600 transition p-1"><i class="fas fa-trash"></i></button>
+                <button onclick="bukaBlokir('${s.nisn}')" class="hover:text-amber-600 transition p-1 ${!isActive ? '' : 'opacity-30 cursor-not-allowed'}"><i class="fas fa-unlock"></i></button>
+            </td>
+        </tr>
+        `;
+    }).join('');
+    lucide.createIcons();
+}
+
+// Ambil Data
+async function loadDataSiswa() {
+    const user = JSON.parse(localStorage.getItem('smart_exam_user'));
+    if (!user?.npsn) return;
 
     google.script.run
         .withSuccessHandler(res => {
             if (res.success) {
-                // Simpan data global untuk filter/hapus massal
-                window.currentFilteredData = res.data; 
+                window.currentFilteredData = res.data;
                 renderTabelSiswa(res.data);
             }
         })
-        .getStudents({ school_npsn: CURRENT_NPSN }); // Pakai variabel global NPSN yang sudah kita bahas
+        .getStudents({ school_npsn: user.npsn });
 }
 
-// 2. Render ke HTML
-function renderTabelSiswa(dataList) {
-    const tbody = document.getElementById('siswa-tbody');
-    // Cek apakah akun premium (misal disimpan di variabel global atau config)
-    const isPremium = true; 
-
-    tbody.innerHTML = dataList.map(s => `
-        <tr class="hover:bg-slate-50 transition-colors">
-            <td class="p-3 font-bold text-slate-700">${s.nisn}</td>
-            <td class="p-3">
-                <div class="font-bold text-slate-800">${s.full_name}</div>
-                <div class="text-[10px] text-slate-400">${s.class_name} | ${s.room_name}</div>
-            </td>
-            <td class="p-3 text-[10px] text-slate-500">${s.description || '-'}</td>
-            <td class="p-3">
-                <span class="px-2 py-1 rounded-full text-[9px] font-bold uppercase ${s.account_status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">
-                    ${s.account_status}
-                </span>
-            </td>
-            <td class="p-3 text-center space-x-2">
-                <button onclick="editSiswa('${s.nisn}')" class="text-indigo-600"><i class="fas fa-edit"></i></button>
-                <button onclick="hapusSiswa('${s.nisn}')" class="text-rose-600"><i class="fas fa-trash"></i></button>
-                ${isPremium ? 
-                    `<button onclick="bukaBlokir('${s.nisn}')" class="text-amber-600"><i class="fas fa-unlock"></i></button>` : 
-                    `<i class="fas fa-lock text-slate-300"></i>`
-                }
-            </td>
-        </tr>
-    `).join('');
-}
-
-// 3. Fungsi Bulk Import
-function prosesImport() {
-    const rawData = document.getElementById('excelPasteArea').value;
-    const lines = rawData.split('\n');
-    
-    const studentList = lines.map(line => {
-        const [nisn, grade_level, full_name, class_name, description, room_name] = line.split('\t');
-        if (!nisn) return null;
-        return { 
-            nisn, school_npsn: CURRENT_NPSN, grade_level, full_name, class_name, description, room_name 
-        };
-    }).filter(s => s !== null);
-
-    google.script.run
-        .withSuccessHandler(() => {
-            showNotif('Data siswa berhasil diimport!', 'success');
-            tutupModalImport();
-            loadDataSiswa();
-        })
-        .saveStudent(studentList);
-}
-
-// Hapus Data Siswa
-function hapusTampilan() {
-    if(!confirm("Hapus semua siswa yang tampil?")) return;
-    
-    // Ambil list nisn dari data yang sedang difilter/ditampilkan
-    const nisnList = currentFilteredData.map(s => s.nisn);
-    
-    google.script.run
-        .withSuccessHandler(() => {
-            showNotif('Data terhapus', 'success');
-            loadDataSiswa(); // Refresh tabel
-        })
-        .deleteBulkStudents(nisnList); // Kita butuh buat fungsi ini di Code.gs
+// Pencarian Universal (Nama, Kelas, Ruang, NISN)
+function filterStudents() {
+    const keyword = document.getElementById('searchUniversalStudents').value.toLowerCase();
+    const filtered = window.currentFilteredData.filter(s => 
+        s.nisn.toString().toLowerCase().includes(keyword) ||
+        s.full_name.toLowerCase().includes(keyword) ||
+        s.class_name.toLowerCase().includes(keyword) ||
+        s.room_name.toLowerCase().includes(keyword)
+    );
+    renderTabelSiswa(filtered);
 }
