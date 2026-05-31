@@ -1,214 +1,226 @@
-async function loadSessions() {
-  const user = JSON.parse(localStorage.getItem('smart_exam_user'));
+// Variable global untuk diffing (mencegah tabel berkedip)
+let lastSessionsDataHash = "";
 
-  if (!user) {
-    window.location.href = 'index.html';
-    return;
+async function loadSessions(showLoading = false) {
+  const user = JSON.parse(localStorage.getItem('smart_exam_user'));
+  if (!user) { window.location.href = 'index.html'; return; }
+
+  const table = document.getElementById('sessionTable');
+  if (!table) return;
+
+  // Tampilkan loading HANYA saat pertama kali / dipaksa
+  if (showLoading) {
+    lastSessionsDataHash = ""; 
+    table.innerHTML = `<tr><td colspan="6" class="py-16 text-center"><div class="flex flex-col items-center justify-center text-slate-400 animate-pulse"><i data-lucide="loader-circle" class="w-10 h-10 mb-2 animate-spin text-indigo-500"></i><p class="text-sm font-medium">Sedang memantau sesi...</p></div></td></tr>`;
+    lucide.createIcons();
   }
 
   // --- CEK PLAN: TAMPILKAN BANNER JIKA BUKAN PREMIUM ---
-  if (user.plan_type && user.plan_type.toLowerCase() !== 'premium') {
-    const table = document.getElementById('sessionTable');
-    if (table) {
-      table.innerHTML = `
-        <tr>
-          <td colspan="7" class="py-12">
-            <div class="flex flex-col items-center justify-center p-8 text-center bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl mx-4">
-              <div class="text-5xl mb-3">🔒</div>
-              <h3 class="text-lg font-bold text-slate-800">Fitur Premium Terkunci</h3>
-              <p class="text-sm text-slate-500 max-w-sm mt-2">
-                Data sesi langsung secara real-time hanya tersedia untuk akun Pro. Silakan upgrade untuk membuka akses.
-              </p>
-            </div>
-          </td>
-        </tr>
-      `;
-    }
-    return; // Hentikan fungsi agar tidak memanggil API
+  if (user.plan_type && user.plan_type.toLowerCase().trim() !== 'premium') {
+    table.innerHTML = `
+      <tr>
+        <td colspan="6" class="py-16 text-center">
+          <div class="flex flex-col items-center justify-center p-8 text-center bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl mx-4">
+            <div class="text-5xl mb-3">🔒</div>
+            <h3 class="text-lg font-bold text-slate-800">Fitur Premium Terkunci</h3>
+            <p class="text-sm text-slate-500 max-w-sm mt-2">Data sesi langsung secara real-time hanya tersedia untuk akun Pro. Silakan upgrade untuk membuka akses.</p>
+          </div>
+        </td>
+      </tr>
+    `;
+    return; 
   }
-  // -----------------------------------------------------
 
+  // Ambil Data dari API
   const result = await apiRequest({
     action: 'getLiveSessions',
     school_npsn: user.school_npsn
   });
 
-  console.log(result);
-
   if (!result.success) return;
 
-  const table = document.getElementById('sessionTable');
-  table.innerHTML = '';
+  // --- OPTIMASI ANTI KEDIP (DATA DIFFING) ---
+  const currentDataHash = JSON.stringify(result.data);
+  if (!showLoading && currentDataHash === lastSessionsDataHash) {
+    return; // Berhenti jika data masih sama (tidak ada perubahan dari server)
+  }
+  lastSessionsDataHash = currentDataHash;
 
+  // Jika Data Kosong
+  if (!result.data || result.data.length === 0) {
+    table.innerHTML = `
+      <tr>
+        <td colspan="6" class="py-16 text-center text-slate-400">
+          <i data-lucide="monitor-off" class="w-12 h-12 mx-auto mb-3 text-slate-300"></i>
+          <p class="text-sm font-semibold text-slate-600">Tidak ada sesi ujian aktif</p>
+          <p class="text-xs mt-1">Belum ada siswa yang login ke dalam ujian.</p>
+        </td>
+      </tr>
+    `;
+    lucide.createIcons();
+    return;
+  }
+
+  // --- RENDER DATA DENGAN BUFFER ---
+  let tableContent = '';
   result.data.forEach(session => {
-    table.innerHTML += `
-      <tr class="border-b border-slate-100 hover:bg-slate-50 transition-all">
-        <td class="px-5 py-4">
-          <div class="flex flex-col">
-            <span class="text-sm font-semibold text-slate-800">
-              ${session.student_name}
-            </span>
-            <span class="text-xs text-slate-400 mt-1">
-              ${session.student_class} • ${session.student_room}
-            </span>
+    tableContent += `
+      <tr class="hover:bg-slate-50 transition-all border-b border-slate-100">
+        <td class="px-6 py-4">
+          <p class="text-sm font-semibold text-slate-800">${session.student_name}</p>
+          <p class="text-xs text-slate-400">${session.student_class} • ${session.student_room}</p>
+        </td>
+        
+        <td class="px-6 py-4 text-sm text-slate-600 font-medium">
+          ${session.subject_name || session.exam_id || '-'}
+        </td>
+
+        <td class="px-6 py-4">
+          <div class="flex flex-col gap-1.5 items-start">
+            ${renderStatus(session.session_status)}
+            ${renderFullscreen(session.fullscreen_status)}
+            ${renderViolation(session.violation_count)}
           </div>
         </td>
 
-        <td class="px-5 py-4">
-          ${renderFullscreen(session.fullscreen_status)}
+        <td class="px-6 py-4 text-sm text-slate-600">
+          <div class="flex items-center gap-2">
+            <i data-lucide="smartphone" class="w-4 h-4 text-slate-400"></i>
+            <span>${parseDeviceInfo(session.device_info)}</span>
+          </div>
         </td>
 
-        <td class="px-5 py-4">
-          ${renderViolation(session.violation_count)}
-        </td>
-
-        <td class="px-5 py-4 text-sm text-slate-600">
-          ${parseDeviceInfo(session.device_info)}
-        </td>
-
-        <td class="px-5 py-4 text-sm text-slate-500">
+        <td class="px-6 py-4 text-xs text-slate-500">
           ${formatLastSeen(session.last_seen)}
         </td>
 
-        <td class="px-5 py-4">
-          ${renderStatus(session.session_status)}
-        </td>
-
-        <td class="px-5 py-4">
-          <button
-            onclick="deleteSession('${session.id}')"
-            class="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-100 transition-all">
-            Hapus
+        <td class="px-6 py-4 text-center">
+          <button onclick="deleteSession('${session.id}')" class="rounded-lg bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-100 transition-all">
+            Reset
           </button>
         </td>
       </tr>
     `;
   });
+
+  table.innerHTML = tableContent;
+  lucide.createIcons();
+  universalFilterSession(); // Jalankan filter jika sedang ada pencarian
 }
 
+// ==========================================
+// FUNGSI PENDUKUNG UI BADGE
+// ==========================================
 function renderFullscreen(status) {
   if (status === 'FULL') {
-    return `
-      <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600">
-        <div class="h-2 w-2 rounded-full bg-emerald-500"></div>
-        Fullscreen Aktif
-      </div>
-    `;
+    return `<div class="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-600"><div class="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>Layar Penuh</div>`;
   }
-  return `
-    <div class="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">
-      <span>⚠️</span>
-      Keluar Fullscreen
-    </div>
-  `;
+  return `<div class="inline-flex items-center gap-1.5 rounded-md bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-600">⚠️ Keluar Layar</div>`;
 }
 
 function renderViolation(count) {
   count = Number(count);
   if (count >= 5) {
-    return `
-      <div class="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-600">
-        ${count} Pelanggaran
-      </div>
-    `;
+    return `<div class="inline-flex rounded-md bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-700">${count} Pelanggaran</div>`;
   }
   if (count >= 2) {
-    return `
-      <div class="inline-flex rounded-full bg-yellow-50 px-3 py-1 text-xs font-bold text-yellow-600">
-        ${count} Pelanggaran
-      </div>
-    `;
+    return `<div class="inline-flex rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-600">${count} Pelanggaran</div>`;
   }
-  return `
-    <div class="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-600">
-      Aman
-    </div>
-  `;
+  return ``; // Sembunyikan kalau nol agar UI bersih
 }
 
 function parseDeviceInfo(deviceInfo) {
   if (!deviceInfo) return 'Unknown Device';
   const info = deviceInfo.toLowerCase();
-  
-  // WINDOWS
-  if (info.includes('win32')) {
-    return 'Chrome • Windows';
-  }
-  // ANDROID
-  if (info.includes('linux arm')) {
-    return 'Android • Mobile';
-  }
-  // IPHONE
-  if (info.includes('iphone')) {
-    return 'Safari • iPhone';
-  }
-  
+  if (info.includes('win32')) return 'Windows PC';
+  if (info.includes('linux arm') || info.includes('android')) return 'Android Mobile';
+  if (info.includes('iphone') || info.includes('mac')) return 'Apple Device';
   return deviceInfo;
 }
 
 function formatLastSeen(dateString) {
   if (!dateString) return '-';
-  return new Date(dateString).toLocaleString('id-ID');
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - date) / 1000);
+  
+  if (diffInSeconds < 60) return '<span class="text-emerald-500 font-medium">Baru saja</span>';
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds/60)} menit yang lalu`;
+  return date.toLocaleString('id-ID', { hour: '2-digit', minute:'2-digit' });
 }
 
 function renderStatus(status) {
   const s = String(status).toLowerCase();
-  // ONLINE
   if (s.includes('online')) {
-    return `
-      <div class="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-600">
-        ONLINE
-      </div>
-    `;
+    return `<div class="inline-flex rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-black tracking-wide text-indigo-600">ONLINE</div>`;
   }
-  // RECONNECT
   if (s.includes('reconnect')) {
-    return `
-      <div class="inline-flex rounded-full bg-yellow-50 px-3 py-1 text-xs font-bold text-yellow-600">
-        RECONNECT
-      </div>
-    `;
+    return `<div class="inline-flex rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-black tracking-wide text-amber-600">RECONNECT</div>`;
   }
-  return `
-    <div class="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-600">
-      DISCONNECTED
-    </div>
-  `;
+  return `<div class="inline-flex rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-black tracking-wide text-slate-500">OFFLINE</div>`;
 }
 
-async function deleteSession(id) {
-  const confirmDelete = confirm('Hapus session ini?');
-  if (!confirmDelete) return;
+// ==========================================
+// FUNGSI PENCARIAN UNIVERSAL
+// ==========================================
+function universalFilterSession() {
+  const searchInput = document.getElementById('searchUniversalSession');
+  if(!searchInput) return;
 
-  const user = JSON.parse(localStorage.getItem('smart_exam_user'));
-  const result = await apiRequest({
-    action: 'deleteSession',
-    id,
-    school_npsn: user.school_npsn
+  const searchTerm = searchInput.value.toLowerCase();
+  const table = document.getElementById('sessionTable');
+  const rows = table.querySelectorAll('tr');
+  let visibleCount = 0;
+
+  rows.forEach(row => {
+    if (row.id === 'no-data-session-row') return;
+
+    const rowText = row.innerText.toLowerCase();
+    if (rowText.includes(searchTerm)) {
+      row.style.display = '';
+      visibleCount++;
+    } else {
+      row.style.display = 'none';
+    }
   });
 
-  alert(result.message);
-  loadSessions();
+  const existingNoData = document.getElementById('no-data-session-row');
+  if (existingNoData) existingNoData.remove();
+
+  if (visibleCount === 0) {
+    const noDataRow = document.createElement('tr');
+    noDataRow.id = 'no-data-session-row';
+    noDataRow.innerHTML = `<td colspan="6" class="py-10 text-center text-slate-400 text-sm">Siswa tidak ditemukan</td>`;
+    table.appendChild(noDataRow);
+  }
+}
+
+// ==========================================
+// FUNGSI AKSI API
+// ==========================================
+async function deleteSession(id) {
+  if (!confirm('Peringatan: Mereset sesi akan membuat siswa ter-logout dan harus login kembali. Lanjutkan?')) return;
+
+  const user = JSON.parse(localStorage.getItem('smart_exam_user'));
+  const result = await apiRequest({ action: 'deleteSession', id, school_npsn: user.school_npsn });
+  loadSessions(true);
 }
 
 async function deleteAllSessions() {
-  const confirmDelete = confirm('Hapus semua session?');
-  if (!confirmDelete) return;
+  if (!confirm('BAHAYA: Anda yakin ingin menghapus SELURUH sesi aktif? Semua siswa akan ter-logout paksa.')) return;
 
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
-  const result = await apiRequest({
-    action: 'deleteAllSessions',
-    school_npsn: user.school_npsn
-  });
-
-  alert(result.message);
-  loadSessions();
+  const result = await apiRequest({ action: 'deleteAllSessions', school_npsn: user.school_npsn });
+  loadSessions(true);
 }
 
-// Inisialisasi awal
-loadSessions();
+// ==========================================
+// INISIALISASI & AUTO-REFRESH
+// ==========================================
+loadSessions(true);
 
-// Auto refresh setiap 5 detik
 setInterval(() => {
-  loadSessions();
+  const searchInput = document.getElementById('searchUniversalSession');
+  // Hanya lakukan refresh otomatis jika kotak pencarian kosong agar tidak mengganggu admin yang sedang mencari
+  if (!searchInput || searchInput.value === "") loadSessions(false);
 }, 5000);
