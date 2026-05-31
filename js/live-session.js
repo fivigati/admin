@@ -206,11 +206,13 @@ function universalFilterSession() {
 // ==========================================
 // FUNGSI AKSI API
 // ==========================================
-async function deleteSession(id) {
-  if (!confirm('Peringatan: Mereset sesi akan membuat siswa ter-logout dan harus login kembali. Lanjutkan?')) return;
+async function deleteSession(nisn, name) {
+  // Tambahkan konfirmasi nama agar admin yakin tidak salah klik
+  if (!confirm(`Peringatan: Mereset sesi akan membuat ${name} (NISN: ${nisn}) ter-logout dan harus login kembali. Lanjutkan?`)) return;
 
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
-  await apiRequest({ action: 'deleteSession', id, school_npsn: user.school_npsn });
+  // Kirim student_nisn ke backend (pastikan backend menangkap parameter ini)
+  await apiRequest({ action: 'deleteSession', student_nisn: nisn, school_npsn: user.school_npsn });
   loadSessions(true);
 }
 
@@ -221,7 +223,6 @@ async function deleteAllSessions() {
   await apiRequest({ action: 'deleteAllSessions', school_npsn: user.school_npsn });
   loadSessions(true);
 }
-
 // ==========================================
 // INISIALISASI & AUTO-REFRESH
 // ==========================================
