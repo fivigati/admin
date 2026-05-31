@@ -70,3 +70,18 @@ function prosesImport() {
         })
         .saveStudent(studentList);
 }
+
+// Hapus Data Siswa
+function hapusTampilan() {
+    if(!confirm("Hapus semua siswa yang tampil?")) return;
+    
+    // Ambil list nisn dari data yang sedang difilter/ditampilkan
+    const nisnList = currentFilteredData.map(s => s.nisn);
+    
+    google.script.run
+        .withSuccessHandler(() => {
+            showNotif('Data terhapus', 'success');
+            loadDataSiswa(); // Refresh tabel
+        })
+        .deleteBulkStudents(nisnList); // Kita butuh buat fungsi ini di Code.gs
+}
