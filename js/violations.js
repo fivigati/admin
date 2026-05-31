@@ -6,6 +6,11 @@ if (dateFilter) {
     loadViolations(true); 
   });
 }
+
+// OPTIMASI 1: Variabel global untuk menyimpan state data terakhir
+// Tujuannya agar kita tidak me-render ulang tabel jika data dari server tidak berubah
+let lastViolationsDataHash = "";
+
 // --- 2. FUNGSI UTAMA ---
 async function loadViolations(showLoading = false) {
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
@@ -14,13 +19,14 @@ async function loadViolations(showLoading = false) {
   const table = document.getElementById('violationsTable');
   if (!table) return;
 
-  // Tampilkan loading HANYA JIKA showLoading bernilai true
   if (showLoading) {
+    // Reset cache hash jika kita memaksa loading manual (misal ganti tanggal)
+    lastViolationsDataHash = ""; 
     table.innerHTML = `<tr><td colspan="5" class="py-16 text-center"><div class="flex flex-col items-center justify-center text-slate-400 animate-pulse"><i data-lucide="loader-circle" class="w-10 h-10 mb-2 animate-spin text-indigo-500"></i><p class="text-sm font-medium">Sedang memuat data...</p></div></td></tr>`;
     lucide.createIcons();
   }
 
-  // 1. CEK PLAN: TAMPILKAN BANNER JIKA BUKAN PREMIUM
+  // 1. CEK PLAN
   if (user.plan_type && user.plan_type.toLowerCase().trim() !== 'premium') {
     table.innerHTML = `
       <tr>
@@ -28,9 +34,7 @@ async function loadViolations(showLoading = false) {
           <div class="flex flex-col items-center justify-center p-8 text-center bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl mx-4">
             <div class="text-5xl mb-3">🔒</div>
             <h3 class="text-lg font-bold text-slate-800">Fitur Premium Terkunci</h3>
-            <p class="text-sm text-slate-500 max-w-sm mt-2">
-              Log dan riwayat pelanggaran hanya tersedia untuk akun Pro. Silakan upgrade untuk membuka akses.
-            </p>
+            <p class="text-sm text-slate-500 max-w-sm mt-2">Log dan riwayat pelanggaran hanya tersedia untuk akun Pro. Silakan upgrade untuk membuka akses.</p>
           </div>
         </td>
       </tr>
@@ -38,7 +42,7 @@ async function loadViolations(showLoading = false) {
     return;
   }
 
- // --- AMBIL TANGGAL DENGAN AMAN ---
+  // --- AMBIL TANGGAL DENGAN AMAN ---
   const selectedDate = dateFilter ? dateFilter.value : new Date().toISOString().split('T')[0];
 
   // --- FETCH DATA ---
@@ -50,7 +54,16 @@ async function loadViolations(showLoading = false) {
 
   if (!result.success) return;
 
-  table.innerHTML = '';
+  // OPTIMASI 2: Cek apakah ada perubahan data (Diffing)
+  // Ubah array data menjadi string untuk dibandingkan. 
+  // Jika sama persis dengan yang tampil di layar, HENTIKAN PROSES agar tabel tidak kedip.
+  const currentDataHash = JSON.stringify(result.data);
+  if (!showLoading && currentDataHash === lastViolationsDataHash) {
+    return; // Keluar dari fungsi, tidak perlu merender ulang DOM yang sama
+  }
+  
+  // Jika data baru/berbeda, update hash terakhir
+  lastViolationsDataHash = currentDataHash;
 
   // --- JIKA DATA KOSONG ---
   if (!result.data || result.data.length === 0) {
@@ -64,12 +77,16 @@ async function loadViolations(showLoading = false) {
       </tr>
     `;
     lucide.createIcons();
+    // OPTIMASI 3: Panggil update filter agar dropdown diset ke kosong
+    updateFilters([]); 
     return;
   }
 
   // --- RENDER DATA ---
+  // OPTIMASI 4: Gunakan String Buffer untuk mengumpulkan HTML
+  let tableContent = '';
   result.data.forEach(v => {
-    table.innerHTML += `
+    tableContent += `
       <tr class="hover:bg-slate-50 transition-all border-b border-slate-100" 
           data-class="${v.student_class}" 
           data-room="${v.student_room}">
@@ -91,8 +108,15 @@ async function loadViolations(showLoading = false) {
       </tr>
     `;
   });
-lucide.createIcons();
-universalFilter();
+  
+  // Terapkan ke tabel 1 KALI SAJA
+  table.innerHTML = tableContent;
+  
+  lucide.createIcons();
+  universalFilter();
+  
+  // OPTIMASI 5: Jangan lupa panggil fungsi update dropdown filternya
+  updateFilters(result.data); 
 }
 
 // --- FUNGSI PENDUKUNG ---
@@ -106,7 +130,6 @@ async function deleteStudentViolations(nisn, name) {
   
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
   
-  // Memanggil API dengan action 'resetViolationStudent'
   const result = await apiRequest({ 
     action: 'resetViolationStudent', 
     student_nisn: nisn, 
@@ -115,7 +138,7 @@ async function deleteStudentViolations(nisn, name) {
   
   if (result.success) {
     alert(result.message);
-    loadViolations(true); // Refresh data
+    loadViolations(true); 
   } else {
     alert("Gagal: " + result.message);
   }
@@ -131,22 +154,18 @@ async function deleteAllViolations() {
 // --- FUNGSI PRINT FINAL ---
 async function printViolations() {
   const user = JSON.parse(localStorage.getItem('smart_exam_user'));
-  // Mengambil data konfigurasi sekolah dari backend
   const res = await apiRequest({ action: 'getSchoolConfig', school_npsn: user.school_npsn });
   
-  // Ambil data sekolah dengan aman
   const sc = (res.data && res.data.school) ? res.data.school : (res.data || {}); 
   
   const datePicker = document.getElementById("dateFilter");
   const tglTerpilih = datePicker ? datePicker.value : new Date().toLocaleDateString();
   
-  // Ambil baris yang sedang tampil di layar
   const rows = document.querySelectorAll("#violationsTable tr");
   let tableContent = "";
   
   rows.forEach(row => {
-    // Hanya cetak baris yang tidak disembunyikan filter
-    if(row.style.display !== 'none') {
+    if(row.style.display !== 'none' && row.id !== 'no-data-row') {
       const cols = row.querySelectorAll("td");
       if(cols.length >= 4) {
         tableContent += `
@@ -161,7 +180,8 @@ async function printViolations() {
   });
 
   const printWindow = window.open('', '_blank');
-  // ... di dalam fungsi printViolations, ganti bagian penulisan HTML menjadi:
+  
+  // OPTIMASI 6: CSS logo ditambah object-fit. Dan ada atribut onerror.
   printWindow.document.write(`
     <html>
       <head>
@@ -170,10 +190,11 @@ async function printViolations() {
           @page { size: A4; margin: 20mm; }
           body { font-family: "Times New Roman", serif; color: black; line-height: 1.2; }
           .kop-container { display: flex; align-items: center; border-bottom: 4px double black; padding-bottom: 10px; margin-bottom: 20px; text-align: center; }
-          .logo { width: 80px; margin-right: 15px; }
+          .logo { width: 80px; margin-right: 15px; object-fit: contain; }
           .kop-text { flex-grow: 1; text-align: center; }
           .kop-text h2 { margin: 0; font-size: 12pt; }
           .kop-text h1 { margin: 0; font-size: 16pt; font-weight: bold; }
+          .kop-contact { font-size: 10pt; margin: 2px 0; }
           .title { text-align: center; font-weight: bold; text-decoration: underline; margin: 20px 0; font-size: 14pt; }
           table { width: 100%; border-collapse: collapse; margin-top: 20px; }
           th, td { border: 1px solid black; padding: 8px; font-size: 10pt; }
@@ -182,11 +203,15 @@ async function printViolations() {
       </head>
       <body>
         <div class="kop-container">
-          <img src="${sc.logo_url || ''}" class="logo">
+          <img src="${sc.logo_url || ''}" class="logo" onerror="this.style.display='none'">
           <div class="kop-text">
             <h2>${(sc.education_department || '').toUpperCase()}</h2>
             <h1>${(sc.school_name || '').toUpperCase()}</h1>
             <p>${sc.address || ''}</p>
+            <p class="kop-contact">
+              ${sc.email ? `Email: ${sc.email} ` : ''} 
+              ${sc.website ? `| Website: ${sc.website}` : ''}
+            </p>
           </div>
         </div>
         
@@ -206,30 +231,22 @@ async function printViolations() {
           <p>Pengawas Ujian,</p><br><br><br>
           <p><b>( ........................................... )</b></p>
         </div>
-        <script>window.onload = function() { window.print(); window.close(); }<\/script>
+        <script>
+          window.onload = function() { 
+            setTimeout(() => { window.print(); window.close(); }, 500); 
+          }
+        <\/script>
       </body>
     </html>
   `);
   printWindow.document.close();
 }
-// Fungsi untuk update filter dropdown secara otomatis
-function updateFilters(data) {
-  const classSet = new Set(data.map(item => item.student_class));
-  const roomSet = new Set(data.map(item => item.student_room));
-
-  const classFilter = document.getElementById('filterClass');
-  const roomFilter = document.getElementById('filterRoom');
-
-  // Reset & isi ulang dropdown
-  classFilter.innerHTML = '<option value="">Semua Kelas</option>';
-  classSet.forEach(c => classFilter.innerHTML += `<option value="${c}">${c}</option>`);
-
-  roomFilter.innerHTML = '<option value="">Semua Ruang</option>';
-  roomSet.forEach(r => roomFilter.innerHTML += `<option value="${r}">${r}</option>`);
-}
 
 function universalFilter() {
-  const searchTerm = document.getElementById('searchUniversal').value.toLowerCase();
+  const searchInput = document.getElementById('searchUniversal');
+  if(!searchInput) return;
+
+  const searchTerm = searchInput.value.toLowerCase();
   const table = document.getElementById('violationsTable');
   const rows = table.querySelectorAll('tr');
   let visibleCount = 0;
@@ -264,5 +281,6 @@ function universalFilter() {
 loadViolations(true);
 setInterval(() => {
   const searchInput = document.getElementById('searchUniversal');
+  // Hanya ambil auto-refresh jika kotak pencarian kosong agar tidak merefresh saat admin sedang mencari data
   if (!searchInput || searchInput.value === "") loadViolations(false);
 }, 5000);
