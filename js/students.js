@@ -35,29 +35,29 @@ function renderTabelSiswa(dataList) {
         return `
         <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
             
-            <td class="p-3">
+            <td class="px-4 py-3">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center">
                         ${s.pic_url ? `<img src="${s.pic_url}" class="w-full h-full object-cover">` : 
                         `<i data-lucide="user" class="w-5 h-5 text-slate-400"></i>`}
                     </div>
-                    <span class="text-sm text-slate-600">${s.nisn}</span>
+                    <span class="text-sm text-slate-700">${s.nisn}</span>
                 </div>
             </td>
             
-            <td class="p-3">
+            <td class="px-4 py-3">
                 <div class="text-sm text-slate-700">${s.full_name}</div>
-                <div class="text-xs text-slate-400">${s.class_name || '-'} • ${s.room_name || '-'}</div>
+                <div class="text-xs text-slate-400 mt-0.5">${s.class_name || '-'} • ${s.room_name || '-'}</div>
             </td>
             
-            <td class="p-3 text-xs text-slate-500">${s.description || '-'}</td>
+            <td class="px-4 py-3 text-xs text-slate-500">${s.description || '-'}</td>
             
-            <td class="p-3">
+            <td class="px-4 py-3 text-center">
                 ${statusHtml}
             </td>
             
-            <td class="p-3">
-                <div class="flex items-center gap-2">
+            <td class="px-4 py-3">
+                <div class="flex items-center justify-center gap-2">
                     <button onclick="editSiswa('${s.nisn}')" class="p-1.5 rounded-md text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors" title="Edit">
                         <i data-lucide="pencil" class="w-4 h-4"></i>
                     </button>
