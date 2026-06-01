@@ -14,7 +14,8 @@ async function loadDataSiswa() {
     });
 
     if (result && result.success) {
-        window.currentFilteredData = result.data; // Data master untuk difilter
+        window.allStudentsData = result.data; // <--- Master Data Permanen
+        window.currentFilteredData = [...result.data]; 
         currentPage = 1;
         selectedSiswa.clear();
         updateTabelDanPaginasi();
@@ -226,15 +227,14 @@ async function simpanEditSiswa(e) {
 // Fitur Pencarian & Buka Blokir
 function filterStudents() {
     const keyword = document.getElementById('searchUniversalStudents').value.toLowerCase();
-    const dataAwal = JSON.parse(localStorage.getItem('smart_exam_user_data_cache')) || window.currentFilteredData; // asumsi ada cache
     
-    window.currentFilteredData = dataAwal.filter(s => 
-        s.nisn.toString().toLowerCase().includes(keyword) ||
-        s.full_name.toLowerCase().includes(keyword) ||
-        s.class_name.toLowerCase().includes(keyword) ||
-        s.room_name.toLowerCase().includes(keyword)
+    window.currentFilteredData = window.allStudentsData.filter(s => 
+        (s.nisn || '').toString().toLowerCase().includes(keyword) ||
+        (s.full_name || '').toLowerCase().includes(keyword) ||
+        (s.class_name || '').toLowerCase().includes(keyword) ||
+        (s.room_name || '').toLowerCase().includes(keyword)
     );
-    currentPage = 1; // Reset ke halaman 1 saat mencari
+    currentPage = 1; 
     updateTabelDanPaginasi();
 }
 
@@ -263,5 +263,69 @@ async function hapusTampilan() {
     if (result && result.success) loadDataSiswa();
 }
 
+function bukaModalImport() {
+    document.getElementById('importTingkat').value = '';
+    document.getElementById('importDataArea').value = '';
+    document.getElementById('modalImportSiswa').classList.remove('hidden');
+}
+
+function tutupModalImport() {
+    document.getElementById('modalImportSiswa').classList.add('hidden');
+}
+
+async function simpanImportSiswa(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSimpanImport');
+    const oriText = btn.innerHTML;
+    
+    const user = JSON.parse(localStorage.getItem('smart_exam_user'));
+    const rawData = document.getElementById('importDataArea').value;
+    const gradeLevel = document.getElementById('importTingkat').value;
+
+    // Parsing data dari Excel/Sheets
+    // Baris dipisah dengan \n, dan Kolom dipisah dengan \t (Tab)
+    const rows = rawData.split('\n').map(row => row.trim()).filter(row => row !== '');
+    
+    const studentsToImport = rows.map(row => {
+        const cols = row.split('\t');
+        return {
+            nisn: cols[0] ? cols[0].trim() : '',
+            full_name: cols[1] ? cols[1].trim() : '',
+            class_name: cols[2] ? cols[2].trim() : '',
+            room_name: cols[3] ? cols[3].trim() : '',
+            description: cols[4] ? cols[4].trim() : ''
+        };
+    }).filter(s => s.nisn !== '' && s.full_name !== ''); // Tolak jika format kacau
+
+    if(studentsToImport.length === 0) {
+        alert("Data kosong atau format salah! Pastikan kamu copy langsung dari Excel.");
+        return;
+    }
+
+    if(!confirm(`Ditemukan ${studentsToImport.length} data siswa yang siap di-import. Lanjutkan?`)) return;
+
+    btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Mengimpor...`;
+    btn.disabled = true;
+
+    const payload = {
+        action: 'importStudents',
+        school_npsn: user.school_npsn,
+        grade_level: gradeLevel,
+        students: studentsToImport
+    };
+
+    const result = await apiRequest(payload);
+
+    if (result && result.success) {
+        tutupModalImport();
+        loadDataSiswa(); // Muat ulang tabel 
+    } else {
+        alert("Gagal mengimpor data: " + (result?.message || 'Error server'));
+    }
+    
+    btn.innerHTML = oriText;
+    btn.disabled = false;
+    lucide.createIcons();
+}
 // Inisialisasi awal
 loadDataSiswa();
