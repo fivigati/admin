@@ -134,8 +134,5 @@ async function hapusUjian(id) {
     }
 }
 
-// Auto-refresh (30 detik sekali)
-setInterval(() => {
-    const view = document.getElementById('view-exams');
-    if (view && !view.classList.contains('hidden')) loadExams();
-}, 30000);
+// Inisialisasi awal
+loadExams();
