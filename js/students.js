@@ -50,16 +50,21 @@ function renderTabelSiswa(dataList) {
 // Ambil Data
 async function loadDataSiswa() {
     const user = JSON.parse(localStorage.getItem('smart_exam_user'));
-    if (!user?.npsn) return;
+    
+    // Perbaiki pengecekan properti menjadi school_npsn
+    if (!user || !user.school_npsn) return;
 
-    google.script.run
-        .withSuccessHandler(res => {
-            if (res.success) {
-                window.currentFilteredData = res.data;
-                renderTabelSiswa(res.data);
-            }
-        })
-        .getStudents({ school_npsn: user.npsn });
+    // Gunakan apiRequest dengan async/await seperti pada live-session dan violations
+    const result = await apiRequest({
+        action: 'getStudents',
+        school_npsn: user.school_npsn
+    });
+
+    // Tangani response dan render tabel
+    if (result && result.success) {
+        window.currentFilteredData = result.data;
+        renderTabelSiswa(result.data);
+    }
 }
 
 // Pencarian Universal (Nama, Kelas, Ruang, NISN)
