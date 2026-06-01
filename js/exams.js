@@ -21,35 +21,50 @@ async function loadExams() {
 // --- 2. RENDER UI CARDS ---
 function renderExams(data) {
     const container = document.getElementById('exams-container');
-    if (data.length === 0) return container.innerHTML = `<p class="col-span-full text-center text-slate-400 text-sm">Tidak ada jadwal.</p>`;
+    if (!data || data.length === 0) {
+        container.innerHTML = `<div class="col-span-full p-10 text-center text-slate-400">Belum ada jadwal ujian.</div>`;
+        return;
+    }
 
     container.innerHTML = data.map(ex => {
-        // Ikon dinamis berdasarkan mapel
-        const icon = ex.subject.toLowerCase().includes('matematika') ? 'calculator' : 
-                     ex.subject.toLowerCase().includes('ipa') ? 'flask-conical' : 'book-open';
+        // Status logic
+        const isActive = ex.exam_status === 'active';
         
         return `
         <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="${icon}" class="w-5 h-5"></i></div>
-                <div>
-                    <h3 class="font-bold text-slate-900">${ex.subject}</h3>
-                    <p class="text-[10px] text-slate-400 font-medium">${ex.exam_date} • ${ex.start_time} - ${ex.end_time}</p>
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="book-open" class="w-5 h-5"></i></div>
+                    <div>
+                        <h3 class="font-bold text-slate-900">${ex.subject}</h3>
+                        <div class="flex items-center gap-3 text-[10px] text-slate-500 mt-0.5">
+                            <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i>${ex.exam_date}</span>
+                            <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i>${ex.start_time} - ${ex.end_time}</span>
+                        </div>
+                    </div>
                 </div>
+                <span class="text-[9px] font-bold px-2 py-1 rounded-full ${isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">
+                    ${isActive ? 'ACTIVE' : 'INACTIVE'}
+                </span>
             </div>
 
-            <div class="space-y-2 mb-4">
+            <div class="space-y-1.5 mb-5">
                 ${ex.targets.map(t => `
-                    <div class="flex justify-between items-center text-xs bg-slate-50 p-2 rounded-lg">
+                    <div class="flex justify-between items-center text-xs bg-slate-50 px-3 py-2 rounded-lg">
                         <span class="font-bold text-slate-700">${t.class}</span>
-                        <a href="${t.link}" target="_blank" class="text-indigo-600 font-bold hover:underline">Link</a>
+                        <a href="${t.link}" target="_blank" class="text-indigo-600 font-bold hover:underline flex items-center gap-1">Link <i data-lucide="external-link" class="w-3 h-3"></i></a>
                     </div>
                 `).join('')}
             </div>
 
-            <div class="flex gap-2 text-[10px] font-bold">
-                <span class="flex-1 text-center bg-emerald-50 text-emerald-700 py-1.5 rounded-md border border-emerald-100">IN: ${ex.entry_token}</span>
-                <span class="flex-1 text-center bg-rose-50 text-rose-600 py-1.5 rounded-md border border-rose-100">OUT: ${ex.exit_token}</span>
+            <div class="flex gap-2">
+                <div class="flex-1 flex gap-1">
+                    <span class="flex-1 text-center bg-emerald-50 text-emerald-700 py-1.5 rounded-lg border border-emerald-100 text-[10px] font-bold">IN: ${ex.entry_token}</span>
+                    <span class="flex-1 text-center bg-rose-50 text-rose-600 py-1.5 rounded-lg border border-rose-100 text-[10px] font-bold">OUT: ${ex.exit_token}</span>
+                </div>
+                <button onclick="hapusUjianBySubject('${ex.subject}')" class="px-3 bg-slate-100 text-slate-600 rounded-lg hover:bg-rose-50 hover:text-rose-600 transition-colors">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
             </div>
         </div>
         `;
@@ -133,6 +148,16 @@ async function hapusUjian(id) {
         alert("Gagal menghapus jadwal.");
     }
 }
-
+async function hapusUjianBySubject(subject) {
+    if(!confirm(`Yakin ingin menghapus seluruh jadwal untuk ${subject}?`)) return;
+    
+    // Kirim subject ke backend untuk dihapus massal berdasarkan subject
+    const res = await apiRequest({ action: 'deleteExamBySubject', subject: subject });
+    if(res.success) {
+        loadExams(); // Refresh
+    } else {
+        alert("Gagal menghapus.");
+    }
+}
 // Inisialisasi awal
 loadExams();
