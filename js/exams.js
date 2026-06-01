@@ -21,39 +21,39 @@ async function loadExams() {
 // --- 2. RENDER UI CARDS ---
 function renderExams(data) {
     const container = document.getElementById('exams-container');
-    if (!data || data.length === 0) {
-        container.innerHTML = `<div class="col-span-full p-10 text-center text-slate-400 text-sm">Belum ada jadwal ujian yang dibuat.</div>`;
-        return;
-    }
+    if (data.length === 0) return container.innerHTML = `<p class="col-span-full text-center text-slate-400 text-sm">Tidak ada jadwal.</p>`;
 
-    container.innerHTML = data.map(ex => `
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
-            <div class="flex justify-between items-start mb-4">
-                <div class="bg-indigo-50 text-indigo-600 p-3 rounded-xl">
-                    <i data-lucide="book-open" class="w-6 h-6"></i>
-                </div>
-                <span class="text-[10px] font-bold px-2 py-1 rounded-full ${ex.exam_status === 'active' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'}">
-                    ${ex.exam_status ? ex.exam_status.toUpperCase() : 'ACTIVE'}
-                </span>
-            </div>
-            
-            <h3 class="font-bold text-slate-900">${ex.subject}</h3>
-            <p class="text-xs text-slate-500 mb-4">${ex.target_class || 'Semua Kelas'}</p>
-            
-            <div class="space-y-2 text-xs text-slate-600 border-t pt-4">
-                <div class="flex items-center gap-2"><i data-lucide="calendar" class="w-3.5 h-3.5"></i> ${ex.exam_date}</div>
-                <div class="flex items-center gap-2"><i data-lucide="clock" class="w-3.5 h-3.5"></i> ${ex.start_time} - ${ex.end_time}</div>
-                <div class="flex items-center gap-2 font-mono font-bold text-indigo-600">
-                    <i data-lucide="key" class="w-3.5 h-3.5"></i> M: ${ex.entry_token} | K: ${ex.exit_token}
+    container.innerHTML = data.map(ex => {
+        // Ikon dinamis berdasarkan mapel
+        const icon = ex.subject.toLowerCase().includes('matematika') ? 'calculator' : 
+                     ex.subject.toLowerCase().includes('ipa') ? 'flask-conical' : 'book-open';
+        
+        return `
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="${icon}" class="w-5 h-5"></i></div>
+                <div>
+                    <h3 class="font-bold text-slate-900">${ex.subject}</h3>
+                    <p class="text-[10px] text-slate-400 font-medium">${ex.exam_date} • ${ex.start_time} - ${ex.end_time}</p>
                 </div>
             </div>
-            
-            <div class="mt-5 flex gap-2">
-                <a href="${ex.exam_link}" target="_blank" class="flex-1 text-center py-2 bg-slate-100 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors">Link Ujian</a>
-                <button onclick="hapusUjian('${ex.id}')" class="px-3 py-2 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+
+            <div class="space-y-2 mb-4">
+                ${ex.targets.map(t => `
+                    <div class="flex justify-between items-center text-xs bg-slate-50 p-2 rounded-lg">
+                        <span class="font-bold text-slate-700">${t.class}</span>
+                        <a href="${t.link}" target="_blank" class="text-indigo-600 font-bold hover:underline">Link</a>
+                    </div>
+                `).join('')}
+            </div>
+
+            <div class="flex gap-2 text-[10px] font-bold">
+                <span class="flex-1 text-center bg-emerald-50 text-emerald-700 py-1.5 rounded-md border border-emerald-100">IN: ${ex.entry_token}</span>
+                <span class="flex-1 text-center bg-rose-50 text-rose-600 py-1.5 rounded-md border border-rose-100">OUT: ${ex.exit_token}</span>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
     lucide.createIcons();
 }
 
