@@ -78,3 +78,5 @@ function filterStudents() {
     );
     renderTabelSiswa(filtered);
 }
+// Panggil fungsi saat file dieksekusi
+loadDataSiswa();
