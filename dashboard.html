@@ -541,9 +541,55 @@
     </div>
   </div>
         
-       <div id="view-exams" class="page-view hidden">
-          <h2 class="text-2xl font-bold">Memuat Manajemen Ujian...</h2>
+<div id="view-exams" class="page-view hidden">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-sm font-bold text-slate-500 uppercase">Jadwal Ujian Aktif</h2>
+    <button onclick="bukaModalJadwal()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-indigo-700">
+      <i data-lucide="plus" class="w-4 h-4"></i> Buat Jadwal
+    </button>
+    <div id="modalTambahJadwal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-200">
+    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+      <h3 class="font-bold text-slate-800 flex items-center gap-2">
+        <i data-lucide="calendar-plus" class="w-5 h-5 text-indigo-600"></i> Buat Jadwal Ujian
+      </h3>
+      <button onclick="tutupModalJadwal()" class="text-slate-400 hover:text-rose-500"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+
+    <form id="formJadwal" onsubmit="simpanJadwal(event)" class="p-6 space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div><label class="block text-xs font-bold text-slate-700 mb-1">Tanggal</label><input type="date" id="examDate" required class="w-full rounded-lg border border-slate-200 p-2.5 text-sm"></div>
+        <div><label class="block text-xs font-bold text-slate-700 mb-1">Durasi (Menit)</label><input type="number" id="examDuration" placeholder="Contoh: 90" required class="w-full rounded-lg border border-slate-200 p-2.5 text-sm"></div>
+        <div><label class="block text-xs font-bold text-slate-700 mb-1">Mulai</label><input type="time" id="startTime" required class="w-full rounded-lg border border-slate-200 p-2.5 text-sm"></div>
+        <div><label class="block text-xs font-bold text-slate-700 mb-1">Selesai</label><input type="time" id="endTime" required class="w-full rounded-lg border border-slate-200 p-2.5 text-sm"></div>
+      </div>
+      
+      <div><label class="block text-xs font-bold text-slate-700 mb-1">Mata Pelajaran</label><input type="text" id="examSubject" required placeholder="Contoh: Matematika" class="w-full rounded-lg border border-slate-200 p-2.5 text-sm"></div>
+      <div><label class="block text-xs font-bold text-slate-700 mb-1">Link Ujian</label><input type="url" id="examLink" required placeholder="https://..." class="w-full rounded-lg border border-slate-200 p-2.5 text-sm"></div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">Target Kelas</label>
+        <div class="flex gap-2">
+          <input type="text" id="inputKelas" placeholder="Misal: 9A" class="flex-1 rounded-lg border border-slate-200 p-2.5 text-sm">
+          <button type="button" onclick="tambahTarget()" class="bg-slate-800 text-white px-4 rounded-lg font-bold text-sm">+</button>
         </div>
+        <div id="targetTags" class="flex flex-wrap gap-2 mt-3"></div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div><label class="block text-xs font-bold text-slate-700 mb-1">Token Masuk</label><input type="text" id="entryToken" required class="w-full rounded-lg border border-slate-200 p-2.5 text-sm uppercase"></div>
+        <div><label class="block text-xs font-bold text-slate-700 mb-1">Token Keluar</label><input type="text" id="exitToken" required class="w-full rounded-lg border border-slate-200 p-2.5 text-sm uppercase"></div>
+      </div>
+
+      <button type="submit" class="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 mt-2">Simpan Jadwal</button>
+    </form>
+  </div>
+</div>
+  </div>
+  
+  <div id="exams-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    </div>
+</div>
        
 <div id="view-live-session" class="page-view hidden">
   
@@ -661,6 +707,7 @@
 
 <script src="js/api.js"></script>
 <script src="js/students.js"></script>
+<script src="js/exams.js"></script>
 <script src="js/dashboard.js"></script>
 <script src="js/live-session.js"></script>
 <script src="js/violations.js"></script>
